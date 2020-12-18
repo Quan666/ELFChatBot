@@ -17,6 +17,8 @@
 
 ## 部署
 
+**注意：Python 3.7+**
+
 #### 第一次部署
 
 1. 下载代码到本地
@@ -62,10 +64,9 @@
 
 #### 已经部署过其它 Nonebot2 机器人
 
-1. 下载 项目代码复制 到你部署好了的机器人 `plugins` 目录
+1. 下载 项目文件夹 `src/plugins/ELFChatBot` 复制 到你部署好了的机器人 `plugins` 目录
 2. 下载 `requirements.txt` 文件，并运行 `pip install -r requirements.txt` 
 3. 同 `第一次部署` 一样，修改配置文件
 4. 运行 `nb run`
-5. 收到机器人发送的启动成功消息
 
 
