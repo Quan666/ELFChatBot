@@ -1,5 +1,8 @@
 # ELFChatBot
 
+这是一个闲聊机器人，基于 [Nonebot2](https://v2.nonebot.dev/guide/)
+接入了腾讯和百度的闲聊 api
+
 ## 申请密钥
 
 1. 腾讯开放平台（推荐作为备用也申请一个）
