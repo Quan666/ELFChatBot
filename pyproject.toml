@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "ELFChatBot"
+version = "1.0.0"
+description = "闲聊QQ机器人，也就是人工智障"
+authors = ["Quan666"]
+license = "GPL v3"
+readme = "README.md"
+
+homepage = "https://github.com/Quan666/ELFChatBot"
+repository = "https://github.com/Quan666/ELFChatBot"
+keywords = ["nonebot", "nonebot2", "闲聊" ,"elf" ,"智能"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+nonebot2 = "^2.0.0.a8"
+nb-cli = "^0.3.1"
+nonebot-plugin-apscheduler = "^0.1.0"
+
+[tool.poetry.dev-dependencies]
+nonebot-test = "^0.1.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
