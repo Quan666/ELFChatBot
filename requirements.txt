@@ -1,0 +1,6 @@
+httpx==0.12.1
+nonebot2==2.0.0a7
+nb-cli==0.3.1
+nonebot-test==0.1.0
+nonebot-plugin-apscheduler==0.1.0
+pydantic==1.7.3
