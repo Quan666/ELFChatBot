@@ -7,6 +7,8 @@ import time
 import httpx
 from urllib.parse import  quote
 
+import requests
+
 
 class BaiduBot:
     # api doc https://ai.baidu.com/forum/topic/show/944007
@@ -18,6 +20,8 @@ class BaiduBot:
     _session='10000' # 会话标识（应用内唯一）
     _Proxy = None
     _client = None
+    _token=''
+    _session_id=''
 
     async def setSession(self,session):
         self._session=session
@@ -26,6 +30,7 @@ class BaiduBot:
         async with self._client as client:
             # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             res = await client.post(self._token_url.format(self._API_Key,self._Secret_Key))
+            # print(res.json())
             return res.json()['access_token']
         pass
 
@@ -35,7 +40,7 @@ class BaiduBot:
             "log_id":re.sub('-','',str(uuid.uuid4())),
             "version":"2.0",
             "service_id":self._bot_id,
-            "session_id":"",
+            "session_id":self._session_id,
             "request":{
                 "query":question,
                 "user_id":self._session
@@ -65,13 +70,12 @@ class BaiduBot:
         #     "bot_id": self._bot_id,
         #     "version": "2.0"
         # }
-        token = await self._getToken()
-
         async with self._client as client:
             # headers = {'Content-Type': 'application/x-www-form-urlencoded'},headers=headers
-            res = await client.post(self._api_url+'?access_token='+token,data=json.dumps(params,ensure_ascii=False))
+            res = await client.post(self._api_url+'?access_token='+self._token,data=json.dumps(params,ensure_ascii=False))
             data=res.json()
             # print(data)
+            self._session_id=data['result']['session_id']
             try:
                 # 返回的有多个回答 ，但暂时默认只返回第一个，如果想返回其他的，再下次发送时需把选择的回答放入 bot_session 对话信息发送过去
                 # for tmp in data['result']['response_list']:
@@ -103,14 +107,15 @@ class BaiduBot:
             self._client=httpx.AsyncClient(proxies=self._Proxy)
         else:
             self._client=httpx.AsyncClient()
+        self._token=requests.post(self._token_url.format(self._API_Key,self._Secret_Key)).json()['access_token']
         pass
 
 
 async def test():
     # 换成你的
-    API_Key='76OZ4u04B93o'
-    Secret_Key='bBabd6LDE25khynHq'
-    bot_id='S47410'
+    API_Key='fgjfghjasd'
+    Secret_Key='dsgdfhg'
+    bot_id='S41230'
     session='test2'
     proxy='127.0.0.1:7890'
     bot = BaiduBot(API_Key=API_Key,Secret_Key=Secret_Key,bot_id=bot_id,session=session,proxy=proxy)
