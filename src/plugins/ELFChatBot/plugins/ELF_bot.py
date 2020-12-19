@@ -1,3 +1,5 @@
+import re
+
 from nonebot import on_command
 from nonebot.adapters.cqhttp import Bot, Event
 from nonebot.log import logger
@@ -13,7 +15,8 @@ ELF_bot = on_command('', rule=to_me(), priority=5)
 @ELF_bot.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: dict):
     session=str(event.user_id)
-    await ELF_bot.send('说再见结束聊天~')
+    if event.group_id:
+        await ELF_bot.send('说再见结束聊天~')
     try:
         proxy=config.proxy
         try:
@@ -48,10 +51,10 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         state["ELF_bot"] = args  # 如果用户发送了参数则直接赋值
 
 
-@ELF_bot.got("ELF_bot", prompt="你想聊点什么呢？说再见结束聊天~")
+@ELF_bot.got("ELF_bot", prompt="")
 async def handle_Chat(bot: Bot, event: Event, state: dict):
     msg = state["ELF_bot"]
-    if msg in ['再见','88']:
+    if re.search('再见',msg) :
         await ELF_bot.send('下次再聊哟！')
         return
     # 百度
