@@ -57,7 +57,6 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
     # 百度
     try:
         baidu = state['BaiduBot']
-        print(baidu._session_id)
         r_msg = await baidu.sendMsg(msg)
     except:
         r_msg={}
