@@ -15,8 +15,11 @@ ELF_bot = on_command('', rule=to_me(), priority=5)
 @ELF_bot.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: dict):
     session=str(event.user_id)
+    if event.group_id in config.bangroup:
+        return
     if event.group_id:
         await ELF_bot.send('说再见结束聊天~')
+        pass
     try:
         proxy=config.proxy
         try:
@@ -53,6 +56,8 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
 
 @ELF_bot.got("ELF_bot", prompt="")
 async def handle_Chat(bot: Bot, event: Event, state: dict):
+    if event.group_id in config.bangroup:
+        return
     msg = state["ELF_bot"]
     if re.search('再见',msg) :
         await ELF_bot.send('下次再聊哟！')
@@ -83,6 +88,6 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             # 腾讯
             tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
             r_msg = await tx.sendMsg(msg)
-        await ELF_bot.reject(r_msg['answer'])
+        await ELF_bot.reject(r_msg['answer'],)
     else:
         await ELF_bot.reject(r_msg['answer'])
