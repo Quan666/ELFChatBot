@@ -41,7 +41,7 @@
 
    3. 生成默认配置文件并修改默认配置
 
-      ```json
+       ```json
       {
         "uin": 你的QQ号,
         "password": "你的密码",
@@ -63,14 +63,14 @@
         "force_fragmented": true,
         "heartbeat_interval": 0,
         "http_config": {
-          "enabled": false,
+          "enabled": true,
           "host": "0.0.0.0",
           "port": 5700,
           "timeout": 0,
           "post_urls": {}
         },
         "ws_config": {
-          "enabled": false,
+          "enabled": true,
           "host": "0.0.0.0",
           "port": 6700
         },
@@ -83,7 +83,7 @@
             "reverse_reconnect_interval": 3000
           }
         ],
-        "post_message_format": "array",
+        "post_message_format": "string",
         "use_sso_address": false,
         "debug": false,
         "log_level": "",
@@ -130,7 +130,7 @@
 
    ```bash
    PROXY = '127.0.0.1:7890' # 如果你开启了代理请务必设置此项，没开务必删除 值（'127.0.0.1:7890'）
-   
+   BanGroup=[] # 群组黑名单 示例 [123,123]
    # 百度，默认优先使用百度
    baidu_api_key="agdtjhdhd" # API Key
    baidu_secret_key="aqefgshj" # Secret Key
