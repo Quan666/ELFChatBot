@@ -130,7 +130,7 @@
 
    ```bash
    PROXY = '127.0.0.1:7890' # 如果你开启了代理请务必设置此项，没开务必删除 值（'127.0.0.1:7890'）
-   
+   BanGroup=[] # 群组黑名单 示例 [123,123]
    # 百度，默认优先使用百度
    baidu_api_key="agdtjhdhd" # API Key
    baidu_secret_key="aqefgshj" # Secret Key
