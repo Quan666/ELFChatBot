@@ -124,23 +124,10 @@
 
 3. 运行 `pip install -r requirements.txt` 
 
-4. 修改插件配置 （文件 `.env` ）
-
-   > 请按照 注释 修改配置文件
-
-   ```bash
-   PROXY = '127.0.0.1:7890' # 如果你开启了代理请务必设置此项，没开务必删除 值（'127.0.0.1:7890'）
-   BanGroup=[] # 群组黑名单 示例 [123,123]
-   # 百度，默认优先使用百度
-   baidu_api_key="agdtjhdhd" # API Key
-   baidu_secret_key="aqefgshj" # Secret Key
-   baidu_bot_id="S065657" # 你闲聊机器人的 id S开头
-   # 腾讯
-   tx_app_id=4631312 # 应用标识（AppId） int
-   tx_appkey="asgdhj" # appkey
-   ```
+4. 请按照 注释 修改配置文件 （文件 `.env.prod` ）
 
 5. 运行 `nb run`
+
 6. 收到机器人发送的启动成功消息
 
 #### 从 Nonebot1 到 NoneBot2
