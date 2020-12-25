@@ -1,7 +1,7 @@
 import random
 import re
 
-from nonebot import on_message
+from nonebot import on_command
 from nonebot.adapters.cqhttp import Bot, Event
 from nonebot.log import logger
 from nonebot.rule import to_me
@@ -11,10 +11,13 @@ from ChatBotApi import baiduBot
 from ChatBotApi import txbot
 
 if config.opendrandom:
-    Random_bot = on_message(rule=None, permission=None, handlers=None, temp=False, priority=1, block=True, state=None)
+    Random_bot = on_command('',rule=None, permission=None, priority=1)
     @Random_bot.handle()
     async def handle_first_receive(bot: Bot, event: Event, state: dict):
+
         r = random.randint(0,1000)
+        # print(float(r))
+        # print(float(config.randomprobability)*10)
         if float(r)>=float(config.randomprobability)*10:
             return
         session=str(event.user_id)
@@ -56,15 +59,6 @@ if config.opendrandom:
         args = str(event.message).strip()  # 首次发送命令时跟随的参数，例：/天气 上海，则args为上海
         if args:
             state["Random_bot"] = args  # 如果用户发送了参数则直接赋值
-
-
-    @Random_bot.got("Random_bot", prompt="")
-    async def handle_Chat(bot: Bot, event: Event, state: dict):
-        try:
-            if event.group_id in config.bangroup:
-                return
-        except:
-            pass
         msg = state["Random_bot"]
         # 百度
         try:
