@@ -15,7 +15,7 @@ if config.opendrandom:
     @Random_bot.handle()
     async def handle_first_receive(bot: Bot, event: Event, state: dict):
         r = random.randint(0,1000)
-        if float(r)<=float(config.randomprobability)*10:
+        if float(r)>=float(config.randomprobability)*10:
             return
         session=str(event.user_id)
         if not event.group_id: # 只在群组生效
