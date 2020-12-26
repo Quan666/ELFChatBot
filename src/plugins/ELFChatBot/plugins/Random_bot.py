@@ -11,7 +11,7 @@ from ChatBotApi import baiduBot
 from ChatBotApi import txbot
 
 if config.opendrandom:
-    Random_bot = on_command('',rule=None, permission=None, priority=1)
+    Random_bot = on_command('',rule=None, permission=None, priority=10)
     @Random_bot.handle()
     async def handle_first_receive(bot: Bot, event: Event, state: dict):
 
