@@ -15,11 +15,6 @@ ELF_bot = on_command('', rule=to_me(), priority=5)
 @ELF_bot.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: dict):
     session=str(event.user_id)
-    try:
-        if event.group_id in config.bangroup:
-            return
-    except:
-        pass
     if event.group_id:
         await ELF_bot.send('说再见结束聊天~')
         pass
@@ -59,11 +54,6 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
 
 @ELF_bot.got("ELF_bot", prompt="")
 async def handle_Chat(bot: Bot, event: Event, state: dict):
-    try:
-        if event.group_id in config.bangroup:
-            return
-    except:
-        pass
     msg = state["ELF_bot"]
     if re.search('再见',msg) :
         await ELF_bot.send('下次再聊哟！')
@@ -75,7 +65,10 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
     except:
         r_msg={}
         r_msg['code']='-1'
-
+    if event.group_id:
+        at = '[CQ:at,qq={}]'.format(event.user_id)
+    else:
+        at=''
     if str(r_msg['code'])!='0':
         # 如果出错转为调用腾讯
         logger.error(r_msg)
@@ -94,6 +87,6 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             # 腾讯
             tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
             r_msg = await tx.sendMsg(msg)
-        await ELF_bot.reject(r_msg['answer'],)
+        await ELF_bot.reject(at+r_msg['answer'])
     else:
-        await ELF_bot.reject(r_msg['answer'])
+        await ELF_bot.reject(at+r_msg['answer'])
