@@ -29,12 +29,6 @@ if config.opendrandom:
         except:
             pass
         try:
-            proxy=config.proxy
-            try:
-                if len(proxy)<1:
-                    proxy=None
-            except:
-                proxy=None
             API_Key=config.baidu_api_key
             Secret_Key=config.baidu_secret_key
             bot_id=config.baidu_bot_id
@@ -47,10 +41,10 @@ if config.opendrandom:
                     logger.error('腾讯、百度 闲聊配置出错！请正确配置1')
                     return
                 # 腾讯
-                tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
+                tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
                 state['TXBot']=tx
             # 百度
-            baidu = baiduBot.BaiduBot(API_Key=API_Key,Secret_Key=Secret_Key,bot_id=bot_id,session=session,proxy=proxy)
+            baidu = baiduBot.BaiduBot(API_Key=API_Key,Secret_Key=Secret_Key,bot_id=bot_id,session=session)
             state['BaiduBot']=baidu
 
         except BaseException as e:
@@ -78,13 +72,12 @@ if config.opendrandom:
                 app_id=config.tx_app_id
                 appkey=config.tx_appkey
                 session=str(event.user_id)
-                proxy=config.proxy
                 if app_id == None or appkey == None:
                     logger.error('腾讯、百度 闲聊配置出错！请正确配置1')
                     # await Random_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
                     return
                 # 腾讯
-                tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
+                tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
                 r_msg = await tx.sendMsg(msg)
             await Random_bot.send(r_msg['answer'],)
         else:

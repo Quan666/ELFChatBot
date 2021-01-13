@@ -71,7 +71,7 @@ class TXBot:
             )
             self._client=httpx.AsyncClient(proxies=self._Proxy)
         else:
-            self._client=httpx.AsyncClient()
+            self._client=httpx.AsyncClient(proxies={})
         pass
 
 

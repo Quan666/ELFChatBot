@@ -24,12 +24,6 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         await ELF_bot.send('说再见结束聊天~')
         pass
     try:
-        proxy=config.proxy
-        try:
-            if len(proxy)<1:
-                proxy=None
-        except:
-            proxy=None
         API_Key=config.baidu_api_key
         Secret_Key=config.baidu_secret_key
         bot_id=config.baidu_bot_id
@@ -43,10 +37,10 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
                 return
             # 腾讯
-            tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
+            tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
             state['TXBot']=tx
         # 百度
-        baidu = baiduBot.BaiduBot(API_Key=API_Key,Secret_Key=Secret_Key,bot_id=bot_id,session=session,proxy=proxy)
+        baidu = baiduBot.BaiduBot(API_Key=API_Key,Secret_Key=Secret_Key,bot_id=bot_id,session=session)
         state['BaiduBot']=baidu
 
     except BaseException as e:
@@ -89,13 +83,12 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             app_id=config.tx_app_id
             appkey=config.tx_appkey
             session=str(event.user_id)
-            proxy=config.proxy
             if app_id == None or appkey == None:
                 logger.error('腾讯闲聊配置出错！')
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
                 return
             # 腾讯
-            tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
+            tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
             r_msg = await tx.sendMsg(msg)
         await ELF_bot.reject(at+r_msg['answer'])
     else:

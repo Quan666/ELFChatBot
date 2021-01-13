@@ -106,7 +106,7 @@ class BaiduBot:
             )
             self._client=httpx.AsyncClient(proxies=self._Proxy)
         else:
-            self._client=httpx.AsyncClient()
+            self._client=httpx.AsyncClient(proxies={})
         self._token=requests.post(self._token_url.format(self._API_Key,self._Secret_Key)).json()['access_token']
         pass
 
