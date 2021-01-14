@@ -1,7 +1,13 @@
 # ELFChatBot
 
-这是一个闲聊机器人，基于 [Nonebot2](https://v2.nonebot.dev/guide/)
-接入了腾讯和百度的闲聊 api
+> **这是一个闲聊机器人，基于 [Nonebot2](https://v2.nonebot.dev/guide/)**  
+> **接入了腾讯和百度的闲聊 api，百度的api支持连续对话**  
+> **可以实现群聊、私聊，同时随机回复群聊消息。**  
+
+
+效果图：
+
+![image-20210114125523902](https://cdn.jsdelivr.net/gh/Quan666/CDN/pic/image-20210114125523902.png)
 
 ## 申请密钥
 
