@@ -15,12 +15,17 @@ ELF_bot = on_command('', rule=to_me(), priority=5)
 @ELF_bot.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: dict):
     try:
-        if event.group_id in config.bangroup:
+        if event.group_id:
+            group_id=event.group_id
+    except:
+        group_id=None
+    try:
+        if group_id in config.bangroup:
             return
     except:
         pass
     session=str(event.user_id)
-    if event.group_id:
+    if group_id is not None:
         await ELF_bot.send('说再见结束聊天~')
         pass
     try:
@@ -54,7 +59,12 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
 @ELF_bot.got("ELF_bot", prompt="")
 async def handle_Chat(bot: Bot, event: Event, state: dict):
     try:
-        if event.group_id in config.bangroup:
+        if event.group_id:
+            group_id=event.group_id
+    except:
+        group_id=None
+    try:
+        if group_id in config.bangroup:
             return
     except:
         pass
@@ -69,7 +79,7 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
     except:
         r_msg={}
         r_msg['code']='-1'
-    if event.group_id:
+    if group_id is not None:
         at = '[CQ:at,qq={}]'.format(event.user_id)
     else:
         at=''

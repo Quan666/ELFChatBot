@@ -1,81 +1,67 @@
-from nonebot import on_command
-from nonebot.adapters.cqhttp import Bot, Event
-from nonebot.rule import to_me
 import re
+
+from nonebot import on_command
+from nonebot.adapters import Event
+from nonebot.adapters.cqhttp import Bot, MessageEvent,GroupMessageEvent, unescape
 from nonebot.log import logger
+from nonebot.rule import to_me
+
 from bot import config
 
-fuck = on_command('fuck', aliases={'伪造','fake'}, rule=to_me(), priority=5)
+tips='''仅在群聊中有效
+使用方法: (@成员1)|(QQ) [自定义昵称]^消息1[+消息2]$[(@成员2)|(QQ) [自定义昵称]^消息1[+消息2]$]
+其中^到$中间为要发送的消息，用 + 分割
+'''
 
-@fuck.handle()
+fake = on_command('fuck', aliases={'伪造','fake'}, rule=to_me(), priority=5)
+
+@fake.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: dict):
-    if not event.group_id:
-        await fuck.send('仅在群聊中有效！')
-        return
+    # print(event.message_type)
     args = str(event.message).strip()
     if args:
-        state["fuck"] = args  # 如果用户发送了参数则直接赋值
+        state["fake"] = args  # 如果用户发送了参数则直接赋值
 
 
-
-@fuck.got("fuck",prompt='触发方式：(bot昵称)|(@bot) fuck\n使用方法: (QQ号)|(@某人) [自定义昵称]%第一条消息[~第二条消息]\n% 后表示消息\n消息用 ~ 分割\n切勿用作违法！')
-async def handle_RssAdd(bot: Bot, event: Event, state: dict):
-    if not event.group_id:
-        await fuck.send('仅在群聊中有效！')
-        return
-    msg_info = state["fuck"]
+@fake.got("fake",prompt=tips)
+async def handle_fake_msg(bot: Bot, event: Event, state: dict):
+    # if event.message_type!='group':
+    #     await fake.send('仅在群聊中有效！')
+    #     return
+    msg_info = state["fake"]
     try:
-        msg = await fuck_forward(msg_info, event.group_id,bot,event.user_id)
-        await bot.call_api('send_group_forward_msg',group_id=msg['group_id'],messages=msg['messages'])
-        await fuck.send('切勿用作违法！')
+        msg = await fake_forward(message=unescape(msg_info), group_id=event.group_id,bot=bot,user_id=event.user_id,bot_nofake_id=config.superusers)
+        await bot.call_api('send_group_forward_msg',group_id=event.group_id,messages=msg)
+        await fake.send('切勿用作违法！')
     except Exception as e:
-        await fuck.send('参数有误！E: {}'.format(e))
+        await fake.send('参数有误！E: {}'.format(e))
         logger.error('参数有误！E: {}'.format(e))
 
-# 仅仅在群聊中有效
-# 触发：(bot昵称)|(@bot) fuck
-# 使用方法: (QQ号)|(@某人) [自定义昵称]%第一条消息[~第二条消息]
-# % 后表示消息
-# 消息用 ~ 分割
-async def fuck_forward(message, group_id,bot,user_id=None):
+# 迫害白名单  设置 user_id bot_nofake_id
+async def fake_forward(message:str, group_id:int,bot:Bot,user_id:int=None,bot_nofake_id:set=None)->list:
     msg = []
-    message = message.replace("&amp;", "&") \
-        .replace("&#91;", "[") \
-        .replace("&#93;", "]") \
-        .replace("&#44;", ",")
-    message_list = message.split('%',1)
-    contents = re.findall('^(?:\[CQ:at,qq=)?(\d{5,})(?:])?([^|]+)?', message_list[0]) #=([^|]+)(?:\|)?$
 
-    for con in contents:
-        user=int(con[0])
-        if int(con[0]) in config.superusers:
+    items = re.findall('\[CQ:at,qq=(\d{5,10}).*?\](.*?)\^([\s\S]*?)\$', message)
+    for qq, name, content in items:
+        user = int(qq)
+        # 保护 xx 不被迫害
+        if bot_nofake_id and user in bot_nofake_id:
             user=user_id
         try:
-            info = await bot.call_api('get_group_member_info',group_id=group_id,user_id=user,no_cache=True)
+            info = await bot.call_api('get_group_member_info', group_id=group_id, user_id=user, no_cache=True)
         except:
-            info=await bot.call_api('get_stranger_info',user_id=user,no_cache=True)
-        if not con[1].strip() or con[1]=='':
-            nickname=info['nickname']
-            try:
-                if info['card']:
-                    nickname=info['card']
-            except:
-                pass
-        else:
-            nickname=con[1].strip()
-        content = message_list[1]
-        msg_list = content.split('~')
+            info = await bot.call_api('get_stranger_info', user_id=user, no_cache=True)
+
+        user_name = name.strip() or info.get('card') or info.get('nickname')
+        msg_list = content.split('+')
         for msg_tmp in msg_list:
-            node = {"type": "node",
-                    "data": {"name": nickname,
-                             "uin": str(user),
-                             "content": msg_tmp
-                             }
-                    }
-            msg.append(node)
-    if msg:
-        return {'group_id': group_id,
-                'messages': msg
+            node = {
+                "type": "node",
+                "data": {
+                    "name": user_name,
+                    "uin": str(user),
+                    "content": msg_tmp
                 }
-    else:
-        return None
+            }
+            msg.append(node)
+    return msg
