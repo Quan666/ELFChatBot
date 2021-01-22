@@ -1,7 +1,7 @@
 import re
 
-from nonebot import on_command
-from nonebot.adapters.cqhttp import Bot, Event
+from nonebot import on_command, message
+from nonebot.adapters.cqhttp import Bot, Event, MessageSegment
 from nonebot.log import logger
 from nonebot.rule import to_me
 from bot import config
@@ -80,9 +80,9 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
         r_msg={}
         r_msg['code']='-1'
     if group_id is not None:
-        at = '[CQ:at,qq={}]'.format(event.user_id)
+        res_messages = MessageSegment.at(event.user_id)
     else:
-        at=''
+        res_messages=MessageSegment.text('')
     if str(r_msg['code'])!='0':
         # 如果出错转为调用腾讯
         logger.error(r_msg)
@@ -100,6 +100,6 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             # 腾讯
             tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
             r_msg = await tx.sendMsg(msg)
-        await ELF_bot.reject(at+r_msg['answer'])
+        await ELF_bot.reject(res_messages+MessageSegment.text(r_msg['answer']))
     else:
-        await ELF_bot.reject(at+r_msg['answer'])
+        await ELF_bot.reject(res_messages+MessageSegment.text(r_msg['answer']))

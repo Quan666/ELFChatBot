@@ -41,7 +41,7 @@ async def handle_fake_msg(bot: Bot, event: Event, state: dict):
 async def fake_forward(message:str, group_id:int,bot:Bot,user_id:int=None,bot_nofake_id:set=None)->list:
     msg = []
 
-    items = re.findall('\[CQ:at,qq=(\d{5,10}).*?\](.*?)\^([\s\S]*?)\$', message)
+    items = re.findall('(?:\[CQ:at,qq=)?(\d{5,10})(?:])?(.*?)\^([\s\S]*?)\$', message)
     for qq, name, content in items:
         user = int(qq)
         # 保护 xx 不被迫害
