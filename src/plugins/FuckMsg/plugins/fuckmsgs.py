@@ -27,7 +27,7 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
     if re.search('结束伪造',msg_info):
         if state['fake_messages']:
             await bot.call_api('send_group_forward_msg',group_id=event.group_id,messages=state['fake_messages'])
-            await fuck.send('切勿用作违法！')
+            # await fuck.send('切勿用作违法！')
         return
     else:
         try:
@@ -83,6 +83,14 @@ async def fuck_forward(message, group_id,bot,user_id=None):
                          }
                 }
             msg.append(node)
+        msg.append({
+            "type": "node",
+            "data": {
+                "name": 'This is fake Message',
+                "uin": str(user_id),
+                "content": '！'
+            }
+        })
     if msg:
         return msg
     else:

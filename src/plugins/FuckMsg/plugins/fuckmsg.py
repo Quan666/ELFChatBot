@@ -32,7 +32,7 @@ async def handle_fake_msg(bot: Bot, event: Event, state: dict):
     try:
         msg = await fake_forward(message=unescape(msg_info), group_id=event.group_id,bot=bot,user_id=event.user_id,bot_nofake_id=config.superusers)
         await bot.call_api('send_group_forward_msg',group_id=event.group_id,messages=msg)
-        await fake.send('切勿用作违法！')
+        # await fake.send('切勿用作违法！')
     except Exception as e:
         await fake.send('参数有误！E: {}'.format(e))
         logger.error('参数有误！E: {}'.format(e))
@@ -45,7 +45,7 @@ async def fake_forward(message:str, group_id:int,bot:Bot,user_id:int=None,bot_no
     for qq, name, content in items:
         user = int(qq)
         # 保护 xx 不被迫害
-        if bot_nofake_id and user in bot_nofake_id:
+        if bot_nofake_id and str(user) in bot_nofake_id or user in bot_nofake_id:
             user=user_id
         try:
             info = await bot.call_api('get_group_member_info', group_id=group_id, user_id=user, no_cache=True)
@@ -64,4 +64,12 @@ async def fake_forward(message:str, group_id:int,bot:Bot,user_id:int=None,bot_no
                 }
             }
             msg.append(node)
+        msg.append({
+            "type": "node",
+            "data": {
+                "name": 'This is fake Message',
+                "uin": str(user_id),
+                "content": '！'
+            }
+        })
     return msg
