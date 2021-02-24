@@ -24,6 +24,20 @@ def chat_me() -> Rule:
 
     async def _chat_me(bot: "Bot", event: "Event", state: T_State) -> bool:
         if event.is_tome():
+            try:
+                if event.group_id:
+                    group_id=event.group_id
+            except:
+                group_id=None
+            try:
+                if group_id in config.bangroup:
+                    logger.info('{} 处在黑名单，拒绝回复'.format(group_id))
+                    return False
+                if event.user_id in config.banuser:
+                    logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
+                    return False
+            except:
+                return True
             if config.user_list:
                 if event.user_id in config.user_list:
                     logger.warning('对话已经存在，不再创建新对话，已抛弃该消息：{}'.format(event))
@@ -55,12 +69,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
     except:
         group_id=None
     state['group_id']=group_id
-    try:
-        if group_id in config.bangroup:
-            stop_chat(user_id=event.user_id)
-            return
-    except:
-        pass
+
     session=str(event.user_id)
     if group_id is not None:
         await ELF_bot.send('说再见结束聊天~')
@@ -75,7 +84,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
             app_id=config.tx_app_id
             appkey=config.tx_appkey
             if app_id == None or appkey == None:
-                logger.error('腾讯闲聊配置出错！')
+                logger.error('腾讯、百度 闲聊配置出错！请正确配置1！')
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
                 stop_chat(user_id=event.user_id)
                 return
@@ -87,6 +96,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         state['BaiduBot']=baidu
 
     except BaseException as e:
+        logger.error('腾讯、百度 闲聊配置出错！请正确配置3'+str(e))
         await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置3'+str(e))
         stop_chat(user_id=event.user_id)
         return
@@ -103,12 +113,9 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             group_id=event.group_id
     except:
         group_id=None
-    try:
-        if group_id in config.bangroup:
-            stop_chat(user_id=event.user_id)
-            return
-    except:
-        pass
+    # 临时解决串群问题
+    if group_id!=state['group_id']:
+        await ELF_bot.reject()
     msg = state["ELF_bot"]
     if re.search('再见',msg) :
         await ELF_bot.send('下次再聊哟！')
