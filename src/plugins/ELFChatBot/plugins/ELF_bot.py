@@ -1,8 +1,12 @@
 import re
+from typing import Optional
 
+import nonebot
 from nonebot import on_command, message
 from nonebot.adapters.cqhttp import Bot, Event, MessageSegment
 from nonebot.log import logger
+from nonebot.matcher import Matcher
+from nonebot.message import run_preprocessor, run_postprocessor
 from nonebot.rule import to_me, Rule
 from nonebot.typing import T_State
 
@@ -38,26 +42,14 @@ def chat_me() -> Rule:
                     return False
             except:
                 return True
-            if config.user_list:
-                if event.user_id in config.user_list:
-                    logger.warning('对话已经存在，不再创建新对话，已抛弃该消息：{}'.format(event))
-                    return False
-                config.user_list.append(event.user_id)
-            else:
-                config.user_list=[]
-                config.user_list.append(event.user_id)
             return True
         else:
             return False
 
     return Rule(_chat_me)
 
-# 结束命令时把用户从队列中移除
-def stop_chat(user_id):
-    if config.user_list:
-        config.user_list.remove(user_id)
 
-
+# nonebot.load_builtin_plugins('single_session') # 有bug
 ELF_bot = on_command('', rule=chat_me(), priority=5)
 
 
@@ -86,7 +78,6 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
             if app_id == None or appkey == None:
                 logger.error('腾讯、百度 闲聊配置出错！请正确配置1！')
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
-                stop_chat(user_id=event.user_id)
                 return
             # 腾讯
             tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
@@ -98,7 +89,6 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
     except BaseException as e:
         logger.error('腾讯、百度 闲聊配置出错！请正确配置3'+str(e))
         await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置3'+str(e))
-        stop_chat(user_id=event.user_id)
         return
 
     args = str(event.message).strip()  # 首次发送命令时跟随的参数，例：/天气 上海，则args为上海
@@ -115,11 +105,12 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
         group_id=None
     # 临时解决串群问题
     if group_id!=state['group_id']:
+        if not group_id:
+            await ELF_bot.reject('你在其他群组的会话未结束呢！')
         await ELF_bot.reject()
     msg = state["ELF_bot"]
     if re.search('再见',msg) :
         await ELF_bot.send('下次再聊哟！')
-        stop_chat(user_id=event.user_id)
         return
     # 百度
     try:
@@ -145,7 +136,6 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             if app_id == None or appkey == None:
                 logger.error('腾讯闲聊配置出错！')
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
-                stop_chat(user_id=event.user_id)
                 return
             # 腾讯
             tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
