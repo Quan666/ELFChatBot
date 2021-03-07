@@ -1,16 +1,16 @@
 import random
 import re
 
+import nonebot
 from nonebot import on_command
 from nonebot.adapters.cqhttp import Bot, Event
 from nonebot.log import logger
 from nonebot.rule import to_me
-from bot import config
 
 from ChatBotApi import baiduBot
 from ChatBotApi import txbot
 
-if config.opendrandom:
+if nonebot.get_driver().config.dict()['opendrandom']:
     Random_bot = on_command('',rule=None, permission=None, priority=10)
     @Random_bot.handle()
     async def handle_first_receive(bot: Bot, event: Event, state: dict):
@@ -22,23 +22,23 @@ if config.opendrandom:
         r = random.randint(0,1000)
         # print(float(r))
         # print(float(config.randomprobability)*10)
-        if float(r)>=float(config.randomprobability)*10:
+        if float(r)>=float(nonebot.get_driver().config.dict()['randomprobability'])*10:
             return
         session=str(event.user_id)
         try:
-            if group_id in config.bangroup:
+            if group_id in nonebot.get_driver().config.dict()['bangroup']:
                 return
         except:
             pass
         try:
-            API_Key=config.baidu_api_key
-            Secret_Key=config.baidu_secret_key
-            bot_id=config.baidu_bot_id
+            API_Key=nonebot.get_driver().config.dict()['baidu_api_key']
+            Secret_Key=nonebot.get_driver().config.dict()['baidu_secret_key']
+            bot_id=nonebot.get_driver().config.dict()['baidu_bot_id']
 
             if API_Key==None or Secret_Key == None or bot_id == None:
                 logger.error('百度闲聊配置出错！将使用腾讯闲聊！')
-                app_id=config.tx_app_id
-                appkey=config.tx_appkey
+                app_id=nonebot.get_driver().config.dict()['tx_app_id']
+                appkey=nonebot.get_driver().config.dict()['tx_appkey']
                 if app_id == None or appkey == None:
                     logger.error('腾讯、百度 闲聊配置出错！请正确配置1')
                     return
@@ -71,8 +71,8 @@ if config.opendrandom:
                 tx = state['TXBot']
                 r_msg = await tx.sendMsg(msg)
             except:
-                app_id=config.tx_app_id
-                appkey=config.tx_appkey
+                app_id=nonebot.get_driver().config.dict()['tx_app_id']
+                appkey=nonebot.get_driver().config.dict()['tx_appkey']
                 session=str(event.user_id)
                 if app_id == None or appkey == None:
                     logger.error('腾讯、百度 闲聊配置出错！请正确配置1')

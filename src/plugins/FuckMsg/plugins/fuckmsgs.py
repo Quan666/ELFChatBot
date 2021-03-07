@@ -1,9 +1,9 @@
+import nonebot
 from nonebot import on_command
 from nonebot.adapters.cqhttp import Bot, Event
 from nonebot.rule import to_me
 import re
 from nonebot.log import logger
-from bot import config
 
 fuck = on_command('fucks', aliases={'伪造s','fakes'}, rule=to_me(), priority=5)
 
@@ -58,7 +58,7 @@ async def fuck_forward(message, group_id,bot,user_id=None):
 
     for con in contents:
         user=int(con[0])
-        if int(con[0]) in config.superusers:
+        if int(con[0]) in nonebot.get_driver().config.dict()['superusers']:
             user=user_id
         try:
             info = await bot.call_api('get_group_member_info',group_id=group_id,user_id=user,no_cache=True)
@@ -83,14 +83,14 @@ async def fuck_forward(message, group_id,bot,user_id=None):
                          }
                 }
             msg.append(node)
-        msg.append({
-            "type": "node",
-            "data": {
-                "name": 'This is fake Message',
-                "uin": str(user_id),
-                "content": '！'
-            }
-        })
+        # msg.append({
+        #     "type": "node",
+        #     "data": {
+        #         "name": 'This is fake Message',
+        #         "uin": str(user_id),
+        #         "content": '！'
+        #     }
+        # })
     if msg:
         return msg
     else:

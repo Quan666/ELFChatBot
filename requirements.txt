@@ -1,6 +1,6 @@
-httpx~=0.16.1
-nonebot2==2.0.0a8.post2
-nb-cli~=0.3.1
+httpx~=0.17.0
+nonebot2==2.0.0a11
+nb-cli~=0.4.0
 nonebot-test~=0.1.0
 nonebot-plugin-apscheduler~=0.1.0
-pydantic~=1.7.3
+nonebot-adapter-cqhttp~=2.0.0a11.post2

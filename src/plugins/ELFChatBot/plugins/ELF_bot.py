@@ -10,8 +10,6 @@ from nonebot.message import run_preprocessor, run_postprocessor
 from nonebot.rule import to_me, Rule
 from nonebot.typing import T_State
 
-from bot import config
-
 from ChatBotApi import baiduBot
 from ChatBotApi import txbot
 
@@ -34,10 +32,10 @@ def chat_me() -> Rule:
             except:
                 group_id=None
             try:
-                if group_id in config.bangroup:
+                if group_id in nonebot.get_driver().config.dict()['bangroup']:
                     logger.info('{} 处在黑名单，拒绝回复'.format(group_id))
                     return False
-                if event.user_id in config.banuser:
+                if event.user_id in nonebot.get_driver().config.dict()['bangroup']:
                     logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                     return False
             except:
@@ -67,14 +65,14 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         await ELF_bot.send('说再见结束聊天~')
         pass
     try:
-        API_Key=config.baidu_api_key
-        Secret_Key=config.baidu_secret_key
-        bot_id=config.baidu_bot_id
+        API_Key=nonebot.get_driver().config.dict()['baidu_api_key']
+        Secret_Key=nonebot.get_driver().config.dict()['baidu_secret_key']
+        bot_id=nonebot.get_driver().config.dict()['baidu_bot_id']
 
         if API_Key==None or Secret_Key == None or bot_id == None:
             logger.error('百度闲聊配置出错！将使用腾讯闲聊！')
-            app_id=config.tx_app_id
-            appkey=config.tx_appkey
+            app_id=nonebot.get_driver().config.dict()['tx_app_id']
+            appkey=nonebot.get_driver().config.dict()['tx_appkey']
             if app_id == None or appkey == None:
                 logger.error('腾讯、百度 闲聊配置出错！请正确配置1！')
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
@@ -130,8 +128,8 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
             tx = state['TXBot']
             r_msg = await tx.sendMsg(msg)
         except:
-            app_id=config.tx_app_id
-            appkey=config.tx_appkey
+            app_id=nonebot.get_driver().config.dict()['tx_app_id']
+            appkey=nonebot.get_driver().config.dict()['tx_appkey']
             session=str(event.user_id)
             if app_id == None or appkey == None:
                 logger.error('腾讯闲聊配置出错！')
