@@ -7,8 +7,8 @@ from nonebot.adapters.cqhttp import Bot, Event
 from nonebot.log import logger
 from nonebot.rule import to_me
 
-from ChatBotApi import baiduBot
-from ChatBotApi import txbot
+from .ChatBotApi import baiduBot
+from .ChatBotApi import txbot
 
 if nonebot.get_driver().config.dict()['opendrandom']:
     Random_bot = on_command('',rule=None, permission=None, priority=10)

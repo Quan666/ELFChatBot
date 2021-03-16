@@ -10,8 +10,8 @@ from nonebot.message import run_preprocessor, run_postprocessor
 from nonebot.rule import to_me, Rule
 from nonebot.typing import T_State
 
-from ChatBotApi import baiduBot
-from ChatBotApi import txbot
+from .ChatBotApi import baiduBot
+from .ChatBotApi import txbot
 
 def chat_me() -> Rule:
     """
