@@ -6,7 +6,7 @@ with open("README.md", "r", encoding='UTF-8') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="elf-chat-bot",
+    name="elfchatbot",
     version="0.0.1",
     author="Quan666",
     author_email="i@oy.mk",
