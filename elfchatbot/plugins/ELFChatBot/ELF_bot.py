@@ -25,6 +25,8 @@ def chat_me() -> Rule:
     """
 
     async def _chat_me(bot: "Bot", event: "Event", state: T_State) -> bool:
+        if str(event.user_id)==str(bot.self_id):
+            return False
         if event.is_tome():
             try:
                 if event.group_id:
@@ -35,7 +37,7 @@ def chat_me() -> Rule:
                 if group_id in nonebot.get_driver().config.dict()['bangroup']:
                     logger.info('{} 处在黑名单，拒绝回复'.format(group_id))
                     return False
-                if event.user_id in nonebot.get_driver().config.dict()['bangroup']:
+                if event.user_id in nonebot.get_driver().config.dict()['banuser']:
                     logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                     return False
             except:
