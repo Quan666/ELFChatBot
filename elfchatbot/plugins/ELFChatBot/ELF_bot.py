@@ -12,6 +12,8 @@ from nonebot.typing import T_State
 
 from .ChatBotApi import baiduBot
 from .ChatBotApi import txbot
+from .config import config
+
 
 def chat_me() -> Rule:
     """
@@ -25,19 +27,20 @@ def chat_me() -> Rule:
     """
 
     async def _chat_me(bot: "Bot", event: "Event", state: T_State) -> bool:
-        if str(event.user_id)==str(bot.self_id):
+
+        if str(event.user_id) == str(bot.self_id) or str(event.user_id) in config.txbot:
             return False
+
         if event.is_tome():
+            if event.__getattribute__('message_type') == 'private':
+                group_id = None
+            else:
+                group_id = event.group_id
             try:
-                if event.group_id:
-                    group_id=event.group_id
-            except:
-                group_id=None
-            try:
-                if group_id in nonebot.get_driver().config.dict()['bangroup']:
+                if group_id in config.BanGroup:
                     logger.info('{} 处在黑名单，拒绝回复'.format(group_id))
                     return False
-                if event.user_id in nonebot.get_driver().config.dict()['banuser']:
+                if event.user_id in config.BanUser:
                     logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                     return False
             except:
@@ -55,40 +58,39 @@ ELF_bot = on_command('', rule=chat_me(), priority=5)
 
 @ELF_bot.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: dict):
-    try:
-        if event.group_id:
-            group_id=event.group_id
-    except:
-        group_id=None
-    state['group_id']=group_id
+    if event.__getattribute__('message_type') == 'private':
+        group_id = None
+    else:
+        group_id = event.group_id
 
-    session=str(event.user_id)
+    state['group_id'] = group_id
+    session = str(event.user_id)
+
     if group_id is not None:
         await ELF_bot.send('说再见结束聊天~')
-        pass
     try:
-        API_Key=nonebot.get_driver().config.dict()['baidu_api_key']
-        Secret_Key=nonebot.get_driver().config.dict()['baidu_secret_key']
-        bot_id=nonebot.get_driver().config.dict()['baidu_bot_id']
+        API_Key = config.baidu_api_key
+        Secret_Key = config.baidu_secret_key
+        bot_id = config.baidu_bot_id
 
-        if API_Key==None or Secret_Key == None or bot_id == None:
+        app_id = config.tx_app_id
+        appkey = config.tx_appkey
+
+        if API_Key and Secret_Key and bot_id:
+            state['Bot'] = baiduBot.BaiduBot(API_Key=API_Key, Secret_Key=Secret_Key, bot_id=bot_id, session=session)
+        else:
             logger.error('百度闲聊配置出错！将使用腾讯闲聊！')
-            app_id=nonebot.get_driver().config.dict()['tx_app_id']
-            appkey=nonebot.get_driver().config.dict()['tx_appkey']
-            if app_id == None or appkey == None:
+            if app_id and appkey:
+                state['Bot'] = txbot.TXBot(app_id=app_id, appkey=appkey, session=session)
+            else:
                 logger.error('腾讯、百度 闲聊配置出错！请正确配置1！')
                 await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
                 return
-            # 腾讯
-            tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
-            state['TXBot']=tx
-        # 百度
-        baidu = baiduBot.BaiduBot(API_Key=API_Key,Secret_Key=Secret_Key,bot_id=bot_id,session=session)
-        state['BaiduBot']=baidu
+
 
     except BaseException as e:
-        logger.error('腾讯、百度 闲聊配置出错！请正确配置3'+str(e))
-        await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置3'+str(e))
+        logger.error('腾讯、百度 闲聊配置出错！请正确配置3' + str(e))
+        await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置3' + str(e))
         return
 
     args = str(event.message).strip()  # 首次发送命令时跟随的参数，例：/天气 上海，则args为上海
@@ -98,48 +100,25 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
 
 @ELF_bot.got("ELF_bot", prompt="")
 async def handle_Chat(bot: Bot, event: Event, state: dict):
-    try:
-        if event.group_id:
-            group_id=event.group_id
-    except:
-        group_id=None
+    if event.__getattribute__('message_type') == 'private':
+        group_id = None
+    else:
+        group_id = event.group_id
     # 临时解决串群问题
-    if group_id!=state['group_id']:
+    if group_id != state['group_id']:
         if not group_id:
-            await ELF_bot.reject('你在其他群组的会话未结束呢！')
-        await ELF_bot.reject()
+            await ELF_bot.finish('已强制结束其他群组的会话！')
+        await ELF_bot.finish()
     msg = state["ELF_bot"]
-    if re.search('再见',msg) :
+    if re.search('再见', msg):
         await ELF_bot.send('下次再聊哟！')
         return
-    # 百度
-    try:
-        baidu = state['BaiduBot']
-        r_msg = await baidu.sendMsg(msg)
-    except:
-        r_msg={}
-        r_msg['code']='-1'
+
+    bot = state['Bot']
+    r_msg = await bot.sendMsg(msg)
+
     if group_id is not None:
         res_messages = MessageSegment.at(event.user_id)
     else:
-        res_messages=MessageSegment.text('')
-    if str(r_msg['code'])!='0':
-        # 如果出错转为调用腾讯
-        logger.error(r_msg)
-        try:
-            tx = state['TXBot']
-            r_msg = await tx.sendMsg(msg)
-        except:
-            app_id=nonebot.get_driver().config.dict()['tx_app_id']
-            appkey=nonebot.get_driver().config.dict()['tx_appkey']
-            session=str(event.user_id)
-            if app_id == None or appkey == None:
-                logger.error('腾讯闲聊配置出错！')
-                await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置1')
-                return
-            # 腾讯
-            tx = txbot.TXBot(app_id=app_id,appkey=appkey,session=session)
-            r_msg = await tx.sendMsg(msg)
-        await ELF_bot.reject(res_messages+MessageSegment.text(r_msg['answer']))
-    else:
-        await ELF_bot.reject(res_messages+MessageSegment.text(r_msg['answer']))
+        res_messages = MessageSegment.text('')
+    await ELF_bot.reject(res_messages + MessageSegment.text(r_msg['answer']))

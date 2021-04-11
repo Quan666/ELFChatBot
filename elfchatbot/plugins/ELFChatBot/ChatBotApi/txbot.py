@@ -30,7 +30,6 @@ class TXBot:
             tmp+=str(key)+'='+quote(str(value))+'&'
         tmp+='app_key='+str(self._appkey)
         return await self._md5(tmp)
-        pass
 
     # 发送对话
     async def sendMsg(self,question:str)->str:
@@ -53,7 +52,6 @@ class TXBot:
                 except:
                     return {'code':str(data['ret']),'session': self._session, 'answer': '发生未知错误：'+str(data)}
             return {'code':str(data['ret']),'session': self._session, 'answer': data['data']['answer']}
-        pass
 
     async def _md5(self,str:str)->str:
         m = hashlib.md5()

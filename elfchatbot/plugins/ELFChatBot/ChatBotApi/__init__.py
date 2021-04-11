@@ -1,1 +1,2 @@
-from . import baiduBot,txbot
+from . import baiduBot
+from . import txbot
