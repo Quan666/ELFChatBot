@@ -1,5 +1,7 @@
 # ELFChatBot
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1b642ec8ccd240bebc63cd37d7337e3d)](https://app.codacy.com/gh/Quan666/ELFChatBot?utm_source=github.com&utm_medium=referral&utm_content=Quan666/ELFChatBot&utm_campaign=Badge_Grade_Settings)
+
 > **这是一个闲聊机器人，基于 [Nonebot2](https://v2.nonebot.dev/guide/)**  
 > **接入了腾讯和百度的闲聊 api，百度的api支持连续对话**  
 > **可以实现群聊、私聊，同时随机回复群聊消息。**  
