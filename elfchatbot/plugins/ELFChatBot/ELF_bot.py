@@ -1,13 +1,8 @@
 import re
-from typing import Optional
-
-import nonebot
-from nonebot import on_command, message
+from nonebot import on_command
 from nonebot.adapters.cqhttp import Bot, Event, MessageSegment
 from nonebot.log import logger
-from nonebot.matcher import Matcher
-from nonebot.message import run_preprocessor, run_postprocessor
-from nonebot.rule import to_me, Rule
+from nonebot.rule import Rule
 from nonebot.typing import T_State
 
 from .ChatBotApi import baiduBot
@@ -37,10 +32,10 @@ def chat_me() -> Rule:
             else:
                 group_id = event.group_id
             try:
-                if group_id in config.BanGroup:
+                if group_id in config.bangroup:
                     logger.info('{} 处在黑名单，拒绝回复'.format(group_id))
                     return False
-                if event.user_id in config.BanUser:
+                if event.user_id in config.banuser:
                     logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                     return False
             except:
@@ -104,6 +99,7 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
         group_id = None
     else:
         group_id = event.group_id
+
     # 临时解决串群问题
     if group_id != state['group_id']:
         if not group_id:

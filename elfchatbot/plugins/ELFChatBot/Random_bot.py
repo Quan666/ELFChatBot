@@ -1,11 +1,8 @@
 import random
-import re
-
-import nonebot
 from nonebot import on_message
 from nonebot.adapters.cqhttp import Bot, Event, MessageSegment
 from nonebot.log import logger
-from nonebot.rule import to_me, Rule
+from nonebot.rule import Rule
 from nonebot.typing import T_State
 
 from .ChatBotApi import baiduBot
@@ -36,10 +33,10 @@ def chat_random() -> Rule:
         if float(r) >= float(config.randomprobability) * 10:
             return False
         try:
-            if event.group_id in config.BanGroup or event.user_id in config.BanUser:
+            if event.group_id in config.bangroup or event.user_id in config.BanUser:
                 logger.info('{} 处在黑名单，拒绝回复'.format(event.group_id))
                 return False
-            if event.user_id in config.BanUser:
+            if event.user_id in config.banuser:
                 logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                 return False
         except:

@@ -18,10 +18,10 @@ class BotConfig(BaseConfig):
     tx_appkey: str = None  # appkey
 
     opendrandom: bool = False  # 随机回复开关
-    randomprobability: int = 0.1  # 随机回复概率， 0.1%
+    randomprobability: int = 1  # 随机回复概率，千分之 1
 
-    BanGroup: list = []  # 群组黑名单 示例 [123,123]
-    BanUser: list = []  # 用户黑名单 示例 [123,123]
+    bangroup: list = []  # 群组黑名单 示例 [123,123]
+    banuser: list = []  # 用户黑名单 示例 [123,123]
 
     txbot: list = ['2854196306', '2854196310', '2854196320']  # 腾讯官方机器人
 

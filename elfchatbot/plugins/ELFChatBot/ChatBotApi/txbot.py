@@ -1,92 +1,98 @@
 import asyncio
 import hashlib
-import json
 import re
 import uuid
 import time
 import httpx
-from urllib.parse import  quote
+from urllib.parse import quote
 
 
 class TXBot:
     # api doc https://ai.qq.com/doc/nlpchat.shtml
     _api_url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat'
-    _app_id=1000001 # 应用标识（AppId） int
-    _appkey='' # appkey
-    _time_stamp=1493468759 # 请求时间戳（秒级） int
-    _nonce_str='fa577ce340859f9fe' # 随机字符串
-    _sign='' #签名信息
-    _session='10000' # 会话标识（应用内唯一）
-    _question='你叫啥' # 用户输入的聊天内容
+    _app_id = 1000001  # 应用标识（AppId） int
+    _appkey = ''  # appkey
+    _time_stamp = 1493468759  # 请求时间戳（秒级） int
+    _nonce_str = 'fa577ce340859f9fe'  # 随机字符串
+    _sign = ''  # 签名信息
+    _session = '10000'  # 会话标识（应用内唯一）
+    _question = '你叫啥'  # 用户输入的聊天内容
     _Proxy = None
     _client = None
-    async def setSession(self,session):
-        self._session=session
+
+    async def setSession(self, session):
+        self._session = session
+
     # 计算接口签名
-    async def _getSign(self,params:dict)->str:
-        params= sorted(params.items(), key=lambda d:d[0], reverse = False)
-        tmp=''
-        for key,value in params:
-            tmp+=str(key)+'='+quote(str(value))+'&'
-        tmp+='app_key='+str(self._appkey)
+    async def _getSign(self, params: dict) -> str:
+        params = sorted(params.items(), key=lambda d: d[0], reverse=False)
+        tmp = ''
+        for key, value in params:
+            tmp += str(key) + '=' + quote(str(value)) + '&'
+        tmp += 'app_key=' + str(self._appkey)
         return await self._md5(tmp)
 
     # 发送对话
-    async def sendMsg(self,question:str)->str:
-        params={
-            'app_id':self._app_id,
-            'time_stamp':int(time.time()),
-            'nonce_str':re.sub('-','',str(uuid.uuid4())),
-            'session':self._session,
-            'question':question
+    async def sendMsg(self, question: str) -> str:
+        params = {
+            'app_id': self._app_id,
+            'time_stamp': int(time.time()),
+            'nonce_str': re.sub('-', '', str(uuid.uuid4())),
+            'session': self._session,
+            'question': question
         }
         sign = await self._getSign(params=params)
-        params['sign']=sign
+        params['sign'] = sign
         async with self._client as client:
             headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            res = await client.post(self._api_url,headers=headers,params=params)
-            data=res.json()
+            res = await client.post(self._api_url, headers=headers, params=params)
+            data = res.json()
             if data['ret'] != 0:
                 try:
-                    return {'code':str(data['ret']),'session': self._session, 'answer': Code[str(data['ret'])]}
+                    return {'code': str(data['ret']), 'session': self._session, 'answer': Code[str(data['ret'])]}
                 except:
-                    return {'code':str(data['ret']),'session': self._session, 'answer': '发生未知错误：'+str(data)}
-            return {'code':str(data['ret']),'session': self._session, 'answer': data['data']['answer']}
+                    return {'code': str(data['ret']), 'session': self._session, 'answer': '发生未知错误：' + str(data)}
+            return {'code': str(data['ret']), 'session': self._session, 'answer': data['data']['answer']}
 
-    async def _md5(self,str:str)->str:
+    async def _md5(self, str: str) -> str:
         m = hashlib.md5()
         m.update(str.encode("utf8"))
         return m.hexdigest().upper()
+
     # 初始化
-    def __init__(self,app_id:int,appkey:str,session:str,proxy:str=None):
-        self._app_id=app_id # 应用标识（AppId） int
-        self._appkey=appkey # appkey
-        self._session=session # 会话标识（应用内唯一）
+    def __init__(self, app_id: int, appkey: str, session: str, proxy: str = None):
+        self._app_id = app_id  # 应用标识（AppId） int
+        self._appkey = appkey  # appkey
+        self._session = session  # 会话标识（应用内唯一）
         if proxy:
             self._Proxy = httpx.Proxy(
                 url="http://" + proxy,
                 mode="TUNNEL_ONLY"  # May be "TUNNEL_ONLY" or "FORWARD_ONLY". Defaults to "DEFAULT".
             )
-            self._client=httpx.AsyncClient(proxies=self._Proxy)
+            self._client = httpx.AsyncClient(proxies=self._Proxy)
         else:
-            self._client=httpx.AsyncClient(proxies={})
+            self._client = httpx.AsyncClient(proxies={})
         pass
 
 
 async def test():
     # 换成你的
-    app_id=000000000
-    appkey='WhSI06tq'
-    session='404'
-    proxy='127.0.0.1:7890'
-    bot = TXBot(app_id=app_id,appkey=appkey,session=session,proxy=proxy)
+    app_id = 000000000
+    appkey = 'WhSI06tq'
+    session = '404'
+    proxy = '127.0.0.1:7890'
+    bot = TXBot(app_id=app_id, appkey=appkey, session=session, proxy=proxy)
     while True:
         msg = await bot.sendMsg(input())
         print(msg)
+
+
 def startfun():
     loop = asyncio.get_event_loop()
     loop.run_until_complete(test())
-if __name__=='__main__':
+
+
+if __name__ == '__main__':
     startfun()
     pass
 
