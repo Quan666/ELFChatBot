@@ -1,6 +1,6 @@
 import re
 from nonebot import on_command
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment
+from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
 from nonebot.typing import T_State
@@ -93,6 +93,11 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         state["ELF_bot"] = args  # 如果用户发送了参数则直接赋值
 
 
+def remove_cqcode(msg: str) -> str:
+    msg = unescape(msg)
+    return re.sub('\[.*?\]','',msg)
+
+
 @ELF_bot.got("ELF_bot", prompt="")
 async def handle_Chat(bot: Bot, event: Event, state: dict):
     if event.__getattribute__('message_type') == 'private':
@@ -105,7 +110,9 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
         if not group_id:
             await ELF_bot.finish('已强制结束其他群组的会话！')
         await ELF_bot.finish()
-    msg = state["ELF_bot"]
+    msg = remove_cqcode(state["ELF_bot"])
+    if len(msg)<=0:
+        await ELF_bot.reject()
     if re.search('再见', msg):
         await ELF_bot.send('下次再聊哟！')
         return

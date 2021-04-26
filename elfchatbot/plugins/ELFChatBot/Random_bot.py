@@ -1,6 +1,8 @@
 import random
+import re
+
 from nonebot import on_message
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment
+from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
 from nonebot.typing import T_State
@@ -9,6 +11,10 @@ from .ChatBotApi import baiduBot
 from .ChatBotApi import txbot
 from .config import config
 
+
+def remove_cqcode(msg: str) -> str:
+    msg = unescape(msg)
+    return re.sub('\[.*?\]','',msg)
 
 def chat_random() -> Rule:
     """
@@ -76,6 +82,8 @@ if config.opendrandom:
             logger.error('腾讯、百度 闲聊配置出错！请正确配置3' + str(e))
             return
 
-        args = str(event.message).strip()
+        args = remove_cqcode(str(event.message).strip())
+        if len(args)<=0:
+            return
         r_msg = await state['Bot'].sendMsg(args)
         await Random_bot.finish(MessageSegment.text(r_msg['answer']))
