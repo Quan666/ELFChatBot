@@ -58,7 +58,9 @@ if config.opendrandom:
 
     @Random_bot.handle()
     async def handle_first_receive(bot: Bot, event: Event, state: dict):
-
+        args = remove_cqcode(str(event.message).strip())
+        if len(args)<=0:
+            return
         session = str(event.user_id)
 
         try:
@@ -82,8 +84,5 @@ if config.opendrandom:
             logger.error('腾讯、百度 闲聊配置出错！请正确配置3' + str(e))
             return
 
-        args = remove_cqcode(str(event.message).strip())
-        if len(args)<=0:
-            return
         r_msg = await state['Bot'].sendMsg(args)
         await Random_bot.finish(MessageSegment.text(r_msg['answer']))
