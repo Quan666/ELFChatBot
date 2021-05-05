@@ -23,6 +23,8 @@ class BotConfig(BaseConfig):
     bangroup: list = []  # 群组黑名单 示例 [123,123]
     banuser: list = []  # 用户黑名单 示例 [123,123]
 
+    finish_keyword = '再见' # 支持正则
+
     txbot: list = ['2854196306', '2854196310', '2854196320']  # 腾讯官方机器人
 
     def __getattr__(self, name: str) -> Any:

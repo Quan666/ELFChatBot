@@ -38,6 +38,8 @@ def chat_me() -> Rule:
                 if event.user_id in config.banuser:
                     logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                     return False
+                if re.search(config.finish_keyword, str(event.message).strip()):
+                    return False
             except:
                 return True
             return True
@@ -62,7 +64,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
     session = str(event.user_id)
 
     if group_id is not None:
-        await ELF_bot.send('说再见结束聊天~')
+        await ELF_bot.send(f'说 {config.finish_keyword} 结束聊天~')
     try:
         API_Key = config.baidu_api_key
         Secret_Key = config.baidu_secret_key
@@ -88,9 +90,9 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置3' + str(e))
         return
 
-    args = str(event.message).strip()  # 首次发送命令时跟随的参数，例：/天气 上海，则args为上海
+    args = str(event.message).strip()
     if args:
-        state["ELF_bot"] = args  # 如果用户发送了参数则直接赋值
+        state["ELF_bot"] = args
 
 
 def remove_cqcode(msg: str) -> str:
@@ -113,7 +115,7 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
     msg = remove_cqcode(state["ELF_bot"])
     if len(msg)<=0:
         await ELF_bot.reject()
-    if re.search('再见', msg):
+    if re.search(config.finish_keyword, msg):
         await ELF_bot.send('下次再聊哟！')
         return
 
