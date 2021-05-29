@@ -8,32 +8,64 @@ import requests
 
 
 class BaiduBot:
-    # api doc https://ai.baidu.com/forum/topic/show/944007
+    # api doc https://ai.baidu.com/forum/topic/show/944007 https://ai.baidu.com/ai-doc/UNIT/bkiy75fn9
     _api_url = 'https://aip.baidubce.com/rpc/2.0/unit/service/chat'
     _token_url = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id={}&client_secret={}'
     _API_Key = ''  # API Key
     _Secret_Key = ''  # Secret Key
     _bot_id = 'S3454'  # 机器人 ID（S开头）
-    _session = '10000'  # 会话标识（应用内唯一）
     _Proxy = None
-    _client = None
-    _token = ''
-    _session_id = ''
+
+    # _session = '10000'  # 会话标识（应用内唯一）
+    # _client = None
+    # _token = ''
+    # _session_id = ''
+
+    # 初始化
+    def __init__(self, API_Key: int, Secret_Key: str, bot_id: str, session: str, proxy: str = None):
+        BaiduBot._API_Key = API_Key
+        BaiduBot._Secret_Key = Secret_Key
+        BaiduBot._bot_id = bot_id
+        self._SYS_CHAT_HIST = []
+        self._SYS_REMEMBERED_SKILLS = []
+        self._session = session
+        self._session_id = ''
+        if proxy:
+            BaiduBot._Proxy = httpx.Proxy(
+                url="http://" + proxy,
+                mode="TUNNEL_ONLY"  # May be "TUNNEL_ONLY" or "FORWARD_ONLY". Defaults to "DEFAULT".
+            )
+            self._client = httpx.AsyncClient(proxies=BaiduBot._Proxy)
+        else:
+            self._client = httpx.AsyncClient(proxies={})
+        self._token = requests.post(BaiduBot._token_url.format(BaiduBot._API_Key, BaiduBot._Secret_Key)).json()[
+            'access_token']
 
     async def setSession(self, session):
         self._session = session
+
+    # 添加对话历史
+    def append_sys_chat_hist(self, msg: str):
+        if len(self._SYS_CHAT_HIST) >= 7:
+            self._SYS_CHAT_HIST = self._SYS_CHAT_HIST[1:]
+        self._SYS_CHAT_HIST.append(msg)
+
+    # 维护对话技能，暂时只存上次请求的第一个回答的技能
+    def append_sys_remembered_skills(self, skill: str):
+        if skill in self._SYS_REMEMBERED_SKILLS:
+            return
+        self._SYS_REMEMBERED_SKILLS.append(skill)  # = [skill]
 
     # 获得Token
     async def _getToken(self) -> str:
         async with self._client as client:
             # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            res = await client.post(self._token_url.format(self._API_Key, self._Secret_Key))
-            # print(res.json())
+            res = await client.post(BaiduBot._token_url.format(BaiduBot._API_Key, BaiduBot._Secret_Key))
             return res.json()['access_token']
-        pass
 
     # 发送对话
     async def sendMsg(self, question: str, proxy='') -> str:
+        self.append_sys_chat_hist(question)
         params = {
             "log_id": re.sub('-', '', str(uuid.uuid4())),
             "version": "2.0",
@@ -45,74 +77,42 @@ class BaiduBot:
             },
             "dialog_state": {
                 "contexts": {
-                    "SYS_REMEMBERED_SKILLS": [
-                        ""
-                    ]
+                    "SYS_REMEMBERED_SKILLS": self._SYS_REMEMBERED_SKILLS,
+                    "SYS_PRESUMED_HIST": self._SYS_CHAT_HIST,
+                    "SYS_CHAT_HIST": self._SYS_CHAT_HIST
                 }
             }
         }
-        # params={
-        #     "bot_session": "",
-        #     "log_id": re.sub('-','',str(uuid.uuid4())),
-        #     "request": {
-        #         "bernard_level": 1,
-        #         "query": question,
-        #         "query_info": {
-        #             "asr_candidates": [],
-        #             "source": "KEYBOARD",
-        #             "type": "TEXT"
-        #         },
-        #         "updates": "",
-        #         "user_id": self._session
-        #     },
-        #     "bot_id": self._bot_id,
-        #     "version": "2.0"
-        # }
         async with self._client as client:
             # headers = {'Content-Type': 'application/x-www-form-urlencoded'},headers=headers
             res = await client.post(self._api_url + '?access_token=' + self._token,
                                     data=json.dumps(params, ensure_ascii=False))
             data = res.json()
             # print(data)
-            self._session_id = data['result']['session_id']
             try:
                 # 返回的有多个回答 ，但暂时默认只返回第一个，如果想返回其他的，再下次发送时需把选择的回答放入 bot_session 对话信息发送过去
                 # for tmp in data['result']['response_list']:
                 #     print(tmp['action_list'][0]['say'])
-                #     pass
-                return {'code': str(data['error_code']), 'session': self._session,
-                        'answer': data['result']['response_list'][0]['action_list'][0]['say']}
+                self._session_id = data['result']['session_id']
+                self.append_sys_chat_hist(data['result']['response_list'][0]['action_list'][0]['say'])
+                # self._SYS_CHAT_HIST = data['result']['dialog_state']['contexts']['SYS_PRESUMED_HIST']
+                self.append_sys_remembered_skills(data['result']['response_list'][0]['origin'])
+                answer = data['result']['response_list'][0]['action_list'][0]['say']
             except:
                 try:
                     if data['error_code'] > 292001 or data['error_code'] < 292015:
-                        return {'code': str(data['error_code']), 'session': self._session,
-                                'answer': Code['292001~292015']}
+                        answer = Code['292001~292015']
                     elif data['error_code'] > 299001 or data['error_code'] < 299999:
-                        return {'code': str(data['error_code']), 'session': self._session,
-                                'answer': Code['299001~299999']}
+                        answer = Code['299001~299999']
                     else:
-                        return {'code': str(data['error_code']), 'session': self._session,
-                                'answer': Code[str(data['error_code'])]}
+                        answer = Code[str(data['error_code'])]
                 except:
-                    return {'code': str(data['error_code']), 'session': self._session, 'answer': '发生未知错误：' + str(data)}
-        pass
-
-    # 初始化
-    def __init__(self, API_Key: int, Secret_Key: str, bot_id: str, session: str, proxy: str = None):
-        self._API_Key = API_Key
-        self._Secret_Key = Secret_Key
-        self._bot_id = bot_id
-        self._session = session
-        if proxy:
-            self._Proxy = httpx.Proxy(
-                url="http://" + proxy,
-                mode="TUNNEL_ONLY"  # May be "TUNNEL_ONLY" or "FORWARD_ONLY". Defaults to "DEFAULT".
-            )
-            self._client = httpx.AsyncClient(proxies=self._Proxy)
-        else:
-            self._client = httpx.AsyncClient(proxies={})
-        self._token = requests.post(self._token_url.format(self._API_Key, self._Secret_Key)).json()['access_token']
-        pass
+                    answer = '发生未知错误：' + str(data)
+        return {
+            'code': str(data['error_code']),
+            'session': self._session,
+            'answer': answer
+        }
 
 
 async def test():
