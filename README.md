@@ -17,15 +17,17 @@
 
 ## 申请密钥
 
-1. 腾讯开放平台（推荐作为备用也申请一个）
-
-   前往 [https://ai.qq.com/console/capability/detail/8](https://ai.qq.com/console/capability/detail/8) 注册并创建应用，并在能力库接入 智能闲聊，得到 `app_id` 以及 `app_key`
-
-2. 百度大脑平台（推荐使用！）
+1. 百度大脑平台（推荐使用！）
 
    https://ai.baidu.com/unit/home 注册并创建机器人，设置好机器人技能（至少包含闲聊），得到机器人id（S开头）、`api_key`、`secret_key`
 
    注意：默认优先使用百度
+   
+   
+2. ~~腾讯开放平台（推荐作为备用也申请一个）~~ 失效了
+
+   ~~前往 [https://ai.qq.com/console/capability/detail/8](https://ai.qq.com/console/capability/detail/8) 注册并创建应用，并在能力库接入 智能闲聊，得到 `app_id` 以及 `app_key`~~
+
 
 ## 部署
 
