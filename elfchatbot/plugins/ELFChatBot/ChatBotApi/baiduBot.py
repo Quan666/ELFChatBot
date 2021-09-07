@@ -93,11 +93,23 @@ class BaiduBot:
                 # 返回的有多个回答 ，但暂时默认只返回第一个，如果想返回其他的，再下次发送时需把选择的回答放入 bot_session 对话信息发送过去
                 # for tmp in data['result']['response_list']:
                 #     print(tmp['action_list'][0]['say'])
-                self._session_id = data['result']['session_id']
-                self.append_sys_chat_hist(data['result']['response_list'][0]['action_list'][0]['say'])
-                # self._SYS_CHAT_HIST = data['result']['dialog_state']['contexts']['SYS_PRESUMED_HIST']
-                self.append_sys_remembered_skills(data['result']['response_list'][0]['origin'])
-                answer = data['result']['response_list'][0]['action_list'][0]['say']
+                self._session_id =  data['result']['session_id']
+                answer = None
+                for response in data['result']['response_list']:
+                    for action in response['action_list']:
+                        if action['action_id'] not in ['fail_action','faq_select_guide']:
+                            self.append_sys_chat_hist(action['say'])
+                            # self._SYS_CHAT_HIST = data['result']['dialog_state']['contexts']['SYS_PRESUMED_HIST']
+                            self.append_sys_remembered_skills(response['origin'])
+                            answer = action['say']
+                            break
+                    if answer:
+                        break
+                if not answer:
+                    self.append_sys_chat_hist(data['result']['response_list'][0]['action_list'][0]['say'])
+                    # self._SYS_CHAT_HIST = data['result']['dialog_state']['contexts']['SYS_PRESUMED_HIST']
+                    self.append_sys_remembered_skills(data['result']['response_list'][0]['origin'])
+                    answer = data['result']['response_list'][0]['action_list'][0]['say']
             except:
                 try:
                     if data['error_code'] > 292001 or data['error_code'] < 292015:
