@@ -38,8 +38,7 @@ class BaiduBot:
             self._client = httpx.AsyncClient(proxies=BaiduBot._Proxy)
         else:
             self._client = httpx.AsyncClient(proxies={})
-        self._token = requests.post(BaiduBot._token_url.format(BaiduBot._API_Key, BaiduBot._Secret_Key)).json()[
-            'access_token']
+        self._token = requests.post(BaiduBot._token_url.format(BaiduBot._API_Key, BaiduBot._Secret_Key, proxies={})).json().get('access_token')
 
     async def setSession(self, session):
         self._session = session
