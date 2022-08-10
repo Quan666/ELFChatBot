@@ -1,9 +1,9 @@
 import re
 from nonebot import on_command
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, unescape
+from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
-from nonebot.typing import T_State
+from nonebot.params import T_State
 
 from .ChatBotApi import baiduBot
 from .ChatBotApi import txbot
@@ -38,7 +38,7 @@ def chat_me() -> Rule:
                 if event.user_id in config.banuser:
                     logger.info('{} 处在黑名单，拒绝回复'.format(event.user_id))
                     return False
-                if re.search(config.finish_keyword, str(event.message).strip()):
+                if re.search(config.finish_keyword, str(event.get_plaintext()).strip()):
                     return False
             except:
                 return True
@@ -54,7 +54,7 @@ ELF_bot = on_command('', rule=chat_me(), priority=5)
 
 
 @ELF_bot.handle()
-async def handle_first_receive(bot: Bot, event: Event, state: dict):
+async def handle_first_receive(bot: Bot, event: Event, state: T_State):
     if event.__getattribute__('message_type') == 'private':
         group_id = None
     else:
@@ -90,7 +90,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: dict):
         await ELF_bot.send('腾讯、百度 闲聊配置出错！请正确配置3' + str(e))
         return
 
-    args = str(event.message).strip()
+    args = str(event.get_plaintext()).strip()
     if args:
         state["ELF_bot"] = args
 
@@ -101,7 +101,7 @@ def remove_cqcode(msg: str) -> str:
 
 
 @ELF_bot.got("ELF_bot", prompt="")
-async def handle_Chat(bot: Bot, event: Event, state: dict):
+async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if event.__getattribute__('message_type') == 'private':
         group_id = None
     else:
@@ -112,7 +112,7 @@ async def handle_Chat(bot: Bot, event: Event, state: dict):
         if not group_id:
             await ELF_bot.finish('已强制结束其他群组的会话！')
         await ELF_bot.finish()
-    msg = remove_cqcode(state["ELF_bot"])
+    msg = remove_cqcode(str(state["ELF_bot"]))
     if len(msg)<=0:
         await ELF_bot.reject()
     if re.search(config.finish_keyword, msg):

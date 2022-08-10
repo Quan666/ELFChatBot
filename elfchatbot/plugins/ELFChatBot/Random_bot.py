@@ -2,10 +2,10 @@ import random
 import re
 
 from nonebot import on_message
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, unescape
+from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
-from nonebot.typing import T_State
+from nonebot.params import T_State
 
 from .ChatBotApi import baiduBot
 from .ChatBotApi import txbot
@@ -57,8 +57,8 @@ if config.opendrandom:
 
 
     @Random_bot.handle()
-    async def handle_first_receive(bot: Bot, event: Event, state: dict):
-        args = remove_cqcode(str(event.message).strip())
+    async def handle_first_receive(bot: Bot, event: Event, state: T_State):
+        args = remove_cqcode(str(event.get_plaintext()).strip())
         if len(args)<=0:
             return
         session = str(event.user_id)
