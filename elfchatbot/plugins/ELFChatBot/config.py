@@ -23,9 +23,11 @@ class BotConfig(BaseConfig):
     bangroup: list = []  # 群组黑名单 示例 [123,123]
     banuser: list = []  # 用户黑名单 示例 [123,123]
 
-    finish_keyword = '再见' # 支持正则
+    finish_keyword = "再见"  # 支持正则
+    chatgpt_session_token: str = None  # ChatGpt session token,有效期大概一个月
+    chat_proxy: str = None  # 代理
 
-    txbot: list = ['2854196306', '2854196310', '2854196320']  # 腾讯官方机器人
+    txbot: list = ["2854196306", "2854196310", "2854196320"]  # 腾讯官方机器人
 
     def __getattr__(self, name: str) -> Any:
         data = self.dict()
@@ -36,4 +38,4 @@ class BotConfig(BaseConfig):
 
 
 config = BotConfig(**get_driver().config.dict())
-logger.debug(f'BotConfig Config loaded: {config!r}')
+logger.debug(f"BotConfig Config loaded: {config!r}")

@@ -1,1 +1,1 @@
-from . import fuckmsg,fuckmsgs
+from . import fuckmsg, fuckmsgs

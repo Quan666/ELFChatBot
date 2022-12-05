@@ -12,7 +12,9 @@ fuck = on_command("fucks", aliases={"伪造s", "fakes"}, rule=to_me(), priority=
 
 
 @fuck.handle()
-async def handle_first_receive(bot: Bot, event: Event, state: T_State, args: Message = CommandArg()):
+async def handle_first_receive(
+    bot: Bot, event: Event, state: T_State, args: Message = CommandArg()
+):
     if not event.group_id:
         await fuck.send("仅在群聊中有效！")
         return
