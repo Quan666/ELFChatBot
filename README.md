@@ -5,7 +5,7 @@
 > **这是一个闲聊机器人，基于 [Nonebot2](https://v2.nonebot.dev/guide/)**  
 > **接入了腾讯和百度的闲聊 api，百度的api支持连续对话**  
 > **可以实现群聊、私聊，同时随机回复群聊消息。**  
-
+> **支持 ChatGPT（感谢 https://github.com/acheong08/ChatGPT 项目）**  
 
 效果图：
 
@@ -27,6 +27,13 @@
 2. ~~腾讯开放平台（推荐作为备用也申请一个）~~ 失效了
 
    ~~前往 [https://ai.qq.com/console/capability/detail/8](https://ai.qq.com/console/capability/detail/8) 注册并创建应用，并在能力库接入 智能闲聊，得到 `app_id` 以及 `app_key`~~
+
+
+3. 注册 openai 
+   
+   OpenAI: [https://chat.openai.com/chat](https://chat.openai.com/chat)
+
+   在cookie中找到 __Secure-next-auth.session-token 填入 chatgpt_session_token ，注意配置代理(e: chat_proxy="127.0.0.1:7890")
 
 
 ## 部署
