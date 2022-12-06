@@ -5,7 +5,7 @@ import json
 import uuid
 from pydantic import BaseModel
 
-HOST = "https://chat.openai.com/chat"
+HOST = "https://chatgpt.iy.ci"
 
 
 class ChatGPTMessage(BaseModel):
@@ -154,12 +154,12 @@ if __name__ == "__main__":
     import asyncio
 
     async def main():
-        chat1 = ChatGPT(proxy="127.0.0.1:7890")
+        chat1 = ChatGPT()
         ChatGPT.global_init(
             session_token="",
         )
 
-        chat2 = ChatGPT(proxy="127.0.0.1:7890")
+        chat2 = ChatGPT()
         await ChatGPT.refresh_session()
         await ChatGPT.refresh_session()
         await ChatGPT.refresh_session()

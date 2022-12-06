@@ -65,11 +65,12 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
         await ChatGptBot.send(f'说 {config.finish_keyword} 结束聊天~')
 
     session_token = config.chatgpt_session_token
+    chatgpt_host = config.chatgpt_host
     if not session_token:
         logger.error("没有配置 ChatGpt session token")
         await ChatGptBot.send("没有配置 ChatGpt session token")
         return
-    chatgpt.ChatGPT.global_init(session_token)
+    chatgpt.ChatGPT.global_init(session_token=session_token, host=chatgpt_host)
     await chatgpt.ChatGPT.refresh_session()
     state['Bot'] = chatgpt.ChatGPT(proxy=config.chat_proxy)
 
