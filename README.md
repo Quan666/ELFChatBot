@@ -11,6 +11,12 @@
 
 ![image-20210114125523902](https://cdn.jsdelivr.net/gh/Quan666/CDN/pic/image-20210114125523902.png)
 
+## 使用
+
+私聊或群里 @bot 即可触发聊天，结束回复设定的关键词即可
+
+ChatGPT： 发送 `chatgpt` 命令触发
+
 ## 娱乐功能
   1. 随机回复群友消息
   2. 伪造转发合并消息（fake、fakes触发，具体使用看代码）
@@ -38,106 +44,8 @@
 
 ## 部署
 
-**注意：Python 3.7+**
+**注意：Python 3.8+**
 
-### 一 、配置 QQ 协议端
-
-   目前支持的协议有:
-
-   - [OneBot(CQHTTP)](https://github.com/howmanybots/onebot/blob/master/README.md)
-
-   QQ 协议端举例:
-
-   - [go-cqhttp ](https://github.com/Mrs4s/go-cqhttp)(基于 [MiraiGo ](https://github.com/Mrs4s/MiraiGo))
-   - [cqhttp-mirai-embedded](https://github.com/yyuueexxiinngg/cqhttp-mirai/tree/embedded)
-   - [Mirai ](https://github.com/mamoe/mirai)+ [cqhttp-mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)
-   - [Mirai ](https://github.com/mamoe/mirai)+ [Mirai Native ](https://github.com/iTXTech/mirai-native)+ [CQHTTP](https://github.com/richardchien/coolq-http-api)
-   - [OICQ-http-api ](https://github.com/takayama-lily/onebot)(基于 [OICQ](https://github.com/takayama-lily/oicq))
-
-   这里以 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp)为例
-
-   1. 下载 go-cqhttp 对应平台的 release 文件，[点此前往](https://github.com/Mrs4s/go-cqhttp/releases)
-
-   2. 运行 exe 文件或者使用 `./go-cqhttp` 启动
-
-   3. 生成默认配置文件并修改默认配置
-
-       ```json
-      {
-        "uin": 你的QQ号,
-        "password": "你的密码",
-        "encrypt_password": false,
-        "password_encrypted": "",
-        "enable_db": true,
-        "access_token": "",
-        "relogin": {
-          "enabled": true,
-          "relogin_delay": 3,
-          "max_relogin_times": 0
-        },
-        "_rate_limit": {
-          "enabled": false,
-          "frequency": 0,
-          "bucket_size": 0
-        },
-        "ignore_invalid_cqcode": false,
-        "force_fragmented": true,
-        "heartbeat_interval": 0,
-        "http_config": {
-          "enabled": true,
-          "host": "0.0.0.0",
-          "port": 5700,
-          "timeout": 0,
-          "post_urls": {}
-        },
-        "ws_config": {
-          "enabled": true,
-          "host": "0.0.0.0",
-          "port": 6700
-        },
-        "ws_reverse_servers": [
-          {
-            "enabled": true,
-            "reverse_url": "ws://127.0.0.1:8080/cqhttp/ws",
-            "reverse_api_url": "",
-            "reverse_event_url": "",
-            "reverse_reconnect_interval": 3000
-          }
-        ],
-        "post_message_format": "string",
-        "use_sso_address": false,
-        "debug": false,
-        "log_level": "",
-        "web_ui": {
-          "enabled": true,
-          "host": "0.0.0.0",
-          "web_ui_port": 9999,
-          "web_input": false
-        }
-      }
-      ```
-
-      其中 `ws://127.0.0.1:8080/cqhttp/ws` 中的 `127.0.0.1` 和 `8080` 应分别对应 nonebot 配置的 HOST 和 PORT
-
-      
-
-      **其中以下配置项务必按照下方样式修改！**
-
-      ```json
-      "ws_reverse_servers": [
-          {
-            "enabled": true,
-            "reverse_url": "ws://127.0.0.1:8080/cqhttp/ws",
-            "reverse_api_url": "",
-            "reverse_event_url": "",
-            "reverse_reconnect_interval": 3000
-          }
-        ],
-      ```
-
-      4. 再次运行 exe 文件或者使用 `./go-cqhttp` 启动
-### 二、部署聊天插件
-#### 第一次部署
 
 1. 下载代码到本地
 
@@ -151,21 +59,6 @@
 
 6. 收到机器人发送的启动成功消息
 
-#### 从 Nonebot1 到 NoneBot2
-
-1. 卸载 nonebot1
-
-   ```bash
-   pip uninstall nonebot
-   ```
-
-2. 运行 
-
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. 参照 `第一次部署`
 
 #### 已经部署过其它 Nonebot2 机器人
 
