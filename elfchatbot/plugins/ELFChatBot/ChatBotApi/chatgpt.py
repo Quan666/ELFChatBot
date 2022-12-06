@@ -38,6 +38,7 @@ class ChatGPT:
     def __init__(self, conversation_id=None, proxy={}):
         self.conversation_id = conversation_id
         self.parent_message_id = self.generate_uuid()
+        self.last_request_data = None
 
         if proxy:
             self.proxy = httpx.Proxy(url="http://" + proxy)
@@ -45,6 +46,7 @@ class ChatGPT:
     def reset_chat(self):
         self.conversation_id = None
         self.parent_message_id = self.generate_uuid()
+        self.last_request_data = None
 
     @property
     def headers(self):
@@ -59,20 +61,27 @@ class ChatGPT:
         uid = str(uuid.uuid4())
         return uid
 
-    async def sendMsg(self, question) -> Optional[ChatGPTMessage]:
-        data = {
-            "action": "next",
-            "messages": [
-                {
-                    "id": str(self.generate_uuid()),
-                    "role": "user",
-                    "content": {"content_type": "text", "parts": [question]},
-                }
-            ],
-            "conversation_id": self.conversation_id,
-            "parent_message_id": self.parent_message_id,
-            "model": "text-davinci-002-render",
-        }
+    async def sendMsg(self, question: str, action: str = "next") -> Optional[ChatGPTMessage]:
+        if action not in ["next", "variant"]:
+            raise ValueError("action must be 'next' or 'variant'")
+        if action == "variant" and self.last_request_data:
+            data = self.last_request_data
+            data["action"] = "variant"
+        else:
+            data = {
+                "action": "next",
+                "messages": [
+                    {
+                        "id": str(self.generate_uuid()),
+                        "role": "user",
+                        "content": {"content_type": "text", "parts": [question]},
+                    }
+                ],
+                "conversation_id": self.conversation_id,
+                "parent_message_id": self.parent_message_id,
+                "model": "text-davinci-002-render",
+            }
+        
         async with httpx.AsyncClient(proxies=self.proxy, timeout=60 * 3) as client:
             response = await client.post(
                 f"{self.host}/backend-api/conversation",
@@ -88,6 +97,10 @@ class ChatGPT:
                     + response.text
                 )
         response = json.loads(response)
+        if action != "variant":
+            self.last_request_data = data
+            self.last_request_data["conversation_id"] = response["conversation_id"]
+
         self.parent_message_id = response["message"]["id"]
         self.conversation_id = response["conversation_id"]
         message = response["message"]["content"]["parts"][0]
@@ -171,5 +184,6 @@ if __name__ == "__main__":
         await ChatGPT.refresh_session()
         print(chat1.authorization)
         print(chat2.authorization)
-        print(await chat1.sendMsg("hello"))
+        print(await chat1.sendMsg("你将成为可爱的女朋友"))
+        print(await chat1.sendMsg("你将成为可爱的女朋友", action="variant"))
     asyncio.run(main())

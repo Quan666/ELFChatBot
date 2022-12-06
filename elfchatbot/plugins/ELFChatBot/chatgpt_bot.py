@@ -49,7 +49,7 @@ def chat_me() -> Rule:
 
 
 # nonebot.load_builtin_plugins('single_session') # 有bug
-ChatGptBot = on_command('chatgpt', rule=chat_me(), priority=1)
+ChatGptBot = on_command('chatgpt', rule=chat_me(), priority=5)
 
 
 @ChatGptBot.handle()
@@ -62,7 +62,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
     state['group_id'] = group_id
 
     if group_id is not None:
-        await ChatGptBot.send(f'说 {config.finish_keyword} 结束聊天~')
+        await ChatGptBot.send(f'输入你的问题\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
 
     session_token = config.chatgpt_session_token
     chatgpt_host = config.chatgpt_host
@@ -86,7 +86,7 @@ def remove_cqcode(msg: str) -> str:
     return re.sub('\[.*?\]', '', msg)
 
 
-@ChatGptBot.got("ChatGptBot", prompt="输入你的问题")
+@ChatGptBot.got("ChatGptBot", prompt="输入你的问题\n#重试(重新回答)\n#刷新(重置上下文)\n说 {} 结束聊天~".format(config.finish_keyword))
 async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if event.__getattribute__('message_type') == 'private':
         group_id = None
@@ -104,10 +104,17 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if re.search(config.finish_keyword, msg):
         await ChatGptBot.send('下次再聊哟！')
         return
-
     bot = state['Bot']
+
+    if msg == '#刷新':
+        bot.reset_chat()
+        await ChatGptBot.reject('已刷新上下文, 请重新输入问题')
+
     try:
-        r_msg = (await bot.sendMsg(msg)).message
+        if msg == '#重试':
+            r_msg = (await bot.sendMsg(question=msg, action="variant")).message
+        else:
+            r_msg = (await bot.sendMsg(msg)).message
     except Exception as e:
         logger.error(e)
         r_msg = f"{e}"
