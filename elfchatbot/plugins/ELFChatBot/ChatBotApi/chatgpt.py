@@ -5,6 +5,8 @@ import json
 import uuid
 from pydantic import BaseModel
 
+HOST = "https://chat.openai.com/chat"
+
 
 class ChatGPTMessage(BaseModel):
     message: str
@@ -17,12 +19,13 @@ class ChatGPT:
     session_token: str
     proxy: Optional[httpx.Proxy] = None
     last_refresh = 0
+    host: str = HOST
 
     conversation_id: Optional[str]
     parent_message_id: str
 
     @classmethod
-    def global_init(cls, session_token: str, authorization: str = None, proxy={}):
+    def global_init(cls, session_token: str, authorization: str = None, proxy={}, host=HOST):
         if cls.authorization:
             return
 
@@ -30,6 +33,7 @@ class ChatGPT:
         cls.authorization = authorization
         if proxy:
             cls.proxy = httpx.Proxy(url="http://" + proxy)
+        cls.host = host
 
     def __init__(self, conversation_id=None, proxy={}):
         self.conversation_id = conversation_id
@@ -70,7 +74,7 @@ class ChatGPT:
         }
         async with httpx.AsyncClient(proxies=self.proxy, timeout=60 * 3) as client:
             response = await client.post(
-                "https://chat.openai.com/backend-api/conversation",
+                f"{self.host}/backend-api/conversation",
                 headers=self.headers,
                 json=data,
             )
@@ -109,7 +113,7 @@ class ChatGPT:
         async with httpx.AsyncClient(proxies=self.proxy, timeout=60 * 3) as client:
             response = await client.stream(
                 method="POST",
-                url="https://chat.openai.com/backend-api/conversation",
+                url=f"{self.host}/backend-api/conversation",
                 headers=self.headers,
                 json=data,
             )
@@ -136,7 +140,7 @@ class ChatGPT:
 
         s = httpx.AsyncClient(proxies=cls.proxy)
         s.cookies.set("__Secure-next-auth.session-token", cls.session_token)
-        response = await s.get("https://chat.openai.com/api/auth/session")
+        response = await s.get(f"{cls.host}/api/auth/session")
         try:
             cls.session_token = response.cookies.get(
                 "__Secure-next-auth.session-token")
@@ -161,5 +165,5 @@ if __name__ == "__main__":
         await ChatGPT.refresh_session()
         print(chat1.authorization)
         print(chat2.authorization)
-
+        print(await chat1.sendMsg("hello"))
     asyncio.run(main())
