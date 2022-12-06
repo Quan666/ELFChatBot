@@ -87,6 +87,9 @@ async function handleRequest(event) {
                 fp.headers["cookie"] = request.cookies;
             }
 
+            fp.headers["host"] = HOST;
+            fp.headers["user-agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36";
+
             // 是否带 body
             if (["POST", "PUT", "PATCH", "DELETE"].indexOf(request.method) >= 0) {
                 const ct = (reqHeaders.get("content-type") || "").toLowerCase();
@@ -107,6 +110,7 @@ async function handleRequest(event) {
             }
             // 发起 fetch
             let fr = await fetch(url, fp);
+            // console.log(await fr.text());
             outCt = fr.headers.get("content-type");
             if (outCt.includes("application/text") || outCt.includes("text/html")) {
                 try {

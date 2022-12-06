@@ -5,7 +5,7 @@ import json
 import uuid
 from pydantic import BaseModel
 
-HOST = "https://chatgpt.iy.ci"
+HOST = "https://chat.openai.com"
 
 
 class ChatGPTMessage(BaseModel):
@@ -52,6 +52,7 @@ class ChatGPT:
             "Accept": "application/json",
             "Authorization": "Bearer " + self.authorization,
             "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
         }
 
     def generate_uuid(self):
@@ -140,11 +141,16 @@ class ChatGPT:
 
         s = httpx.AsyncClient(proxies=cls.proxy)
         s.cookies.set("__Secure-next-auth.session-token", cls.session_token)
-        response = await s.get(f"{cls.host}/api/auth/session")
+        response = await s.get(f"{cls.host}/api/auth/session", headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        })
         try:
             cls.session_token = response.cookies.get(
                 "__Secure-next-auth.session-token")
             cls.authorization = response.json().get("accessToken", cls.authorization)
+
         except Exception as e:
             raise Exception(
                 f"Error refreshing session: {str(e)} {response.text}")
