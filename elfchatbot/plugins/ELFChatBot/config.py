@@ -25,8 +25,6 @@ class BotConfig(BaseConfig):
     banuser: list = []  # 用户黑名单 示例 [123,123]
 
     finish_keyword = "再见"  # 支持正则
-    # ChatGpt session token,有效期大概一个月
-    chatgpt_session_token: Optional[str] = None
     chat_proxy: Optional[str] = None  # 代理
     chatgpt_host: Optional[str] = None
 

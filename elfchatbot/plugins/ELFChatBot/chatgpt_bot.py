@@ -4,6 +4,7 @@ from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
 from nonebot.params import T_State
+from nonebot.permission import SUPERUSER
 
 from .ChatBotApi import chatgpt
 from .config import config
@@ -48,7 +49,6 @@ def chat_me() -> Rule:
     return Rule(_chat_me)
 
 
-# nonebot.load_builtin_plugins('single_session') # 有bug
 ChatGptBot = on_command('chatgpt', rule=chat_me(), priority=5)
 
 
@@ -61,16 +61,18 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
 
     state['group_id'] = group_id
 
-    if group_id is not None:
-        await ChatGptBot.send(f'输入你的问题\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
-
-    session_token = config.chatgpt_session_token
-    chatgpt_host = config.chatgpt_host
+    session_token = chatgpt.ChatGPT.session_token
     if not session_token:
-        logger.error("没有配置 ChatGpt session token")
-        await ChatGptBot.send("没有配置 ChatGpt session token")
+        logger.error("没有配置 ChatGPT Session Token")
+        await ChatGptBot.finish("没有配置 ChatGPT Session Token, 请联系管理员配置")
         return
-    chatgpt.ChatGPT.global_init(session_token=session_token, host=chatgpt_host)
+
+    if group_id is not None:
+        await ChatGptBot.send(f'ChatGPT聊天模式\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
+    chatgpt.ChatGPT.global_init(
+        session_token=session_token,
+        host=config.chatgpt_host if config.chatgpt_host else None,
+    )
     await chatgpt.ChatGPT.refresh_session()
     state['Bot'] = chatgpt.ChatGPT(proxy=config.chat_proxy)
 
@@ -104,6 +106,7 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if re.search(config.finish_keyword, msg):
         await ChatGptBot.send('下次再聊哟！')
         return
+
     bot = state['Bot']
 
     if msg == '#刷新':
@@ -124,3 +127,32 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
     else:
         res_messages = MessageSegment.text('')
     await ChatGptBot.reject(res_messages + MessageSegment.text(r_msg))
+
+
+ChatGptBotToken = on_command(
+    'chatgpt_token', rule=chat_me(), priority=5, permission=SUPERUSER)
+
+
+@ChatGptBotToken.handle()
+async def handle_first_receive(bot: Bot, event: Event, state: T_State):
+    if event.__getattribute__('message_type') == 'private':
+        group_id = None
+    else:
+        group_id = event.group_id
+
+    state['group_id'] = group_id
+
+    args = str(event.get_plaintext()).strip()
+    token = re.sub(r"^chatgpt_token\s*", "", args)
+    if not token:
+        await ChatGptBotToken.finish('没有输入token')
+
+    chatgpt.ChatGPT.session_token = token
+    try:
+        await chatgpt.ChatGPT.refresh_session()
+
+    except Exception as e:
+        logger.error(e)
+        await ChatGptBotToken.finish('token错误: {}'.format(e))
+        return
+    await ChatGptBotToken.finish('token设置成功')

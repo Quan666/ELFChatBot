@@ -4,6 +4,8 @@ import httpx
 import json
 import uuid
 from pydantic import BaseModel
+# from OpenAIAuth.OpenAIAuth import OpenAIAuth
+# import threading
 
 HOST = "https://chat.openai.com"
 
@@ -16,10 +18,13 @@ class ChatGPTMessage(BaseModel):
 
 class ChatGPT:
     authorization: Optional[str] = None
-    session_token: str
+    session_token: Optional[str] = None
     proxy: Optional[httpx.Proxy] = None
     last_refresh = 0
     host: str = HOST
+
+    # auth: Optional[OpenAIAuth] = None
+    # login_lock = threading.Lock()
 
     conversation_id: Optional[str]
     parent_message_id: str
@@ -34,6 +39,33 @@ class ChatGPT:
         if proxy:
             cls.proxy = httpx.Proxy(url="http://" + proxy)
         cls.host = host
+
+    # @classmethod
+    # def global_login(cls, username: str, password: str, proxy={}):
+    #     use_proxy = False
+    #     if proxy:
+    #         proxy = "http://" + proxy
+    #         use_proxy = True
+    #     cls.auth = OpenAIAuth(username, password,
+    #                           proxy=proxy, use_proxy=use_proxy)
+
+    #     cls.login()
+
+    # @classmethod
+    # def login(cls):
+    #     def _login():
+    #         try:
+    #             cls.auth.begin()
+    #         except Exception as e:
+    #             print(e)
+    #     if cls.auth:
+    #         with cls.login_lock:
+    #             # new thread
+    #             task = threading.Thread(target=_login)
+    #             task.start()
+    #             # 等待线程结束
+    #             task.join()
+    #             cls.session_token = cls.auth.session_token
 
     def __init__(self, conversation_id=None, proxy={}):
         self.conversation_id = conversation_id
@@ -50,6 +82,8 @@ class ChatGPT:
 
     @property
     def headers(self):
+        if not self.authorization:
+            raise ValueError("Authorization is not set")
         return {
             "Accept": "application/json",
             "Authorization": "Bearer " + self.authorization,
@@ -81,7 +115,7 @@ class ChatGPT:
                 "parent_message_id": self.parent_message_id,
                 "model": "text-davinci-002-render",
             }
-        
+
         async with httpx.AsyncClient(proxies=self.proxy, timeout=60 * 3) as client:
             response = await client.post(
                 f"{self.host}/backend-api/conversation",
@@ -92,6 +126,13 @@ class ChatGPT:
                 response = response.text.splitlines()[-4]
                 response = response[6:]
             except:
+                # if response.status_code == 401:
+                #     self.login()
+                #     await self.sendMsg(question, action)
+                if response.text.find("Too Many Requests") != -1:
+                    return ChatGPTMessage(message="请求太快，休息会", conversation_id="", parent_message_id="")
+                elif response.text.find("token_expired") != -1:
+                    return ChatGPTMessage(message="Token 过期请重置", conversation_id="", parent_message_id="")
                 raise ValueError(
                     "Response is not in the correct format, response with: "
                     + response.text
@@ -175,15 +216,11 @@ if __name__ == "__main__":
     async def main():
         chat1 = ChatGPT()
         ChatGPT.global_init(
-            session_token="",
+            session_token=""
         )
 
-        chat2 = ChatGPT()
-        await ChatGPT.refresh_session()
-        await ChatGPT.refresh_session()
         await ChatGPT.refresh_session()
         print(chat1.authorization)
-        print(chat2.authorization)
         print(await chat1.sendMsg("你将成为可爱的女朋友"))
         print(await chat1.sendMsg("你将成为可爱的女朋友", action="variant"))
     asyncio.run(main())

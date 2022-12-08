@@ -39,13 +39,16 @@ ChatGPT： 发送 `chatgpt` 命令触发
    
    OpenAI: [https://chat.openai.com/chat](https://chat.openai.com/chat)
 
-   在cookie中找到 __Secure-next-auth.session-token 填入 chatgpt_session_token ，
+   在cookie中找到 __Secure-next-auth.session-token 通过 `chatgpt_token` 命令设置
    
    国内服务器需要以下步骤二选一：
 
     1. 使用 cloudflare 反代 chat.openai.com ，将 `chatgpt_cf_proxy.js` 文件内代码复制部署到 cloudflare workers 并配置自定义域名，将域名填入如 `chatgpt_host=https://chatgpt.iy.ci`
 
     2. 配置代理(e: chat_proxy="127.0.0.1:7890")
+
+   使用： 
+    发送 `chatgpt 问题` 即可，在群组需要在前面 @机器人
 
 
 ## 部署
