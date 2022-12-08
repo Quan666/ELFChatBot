@@ -1,5 +1,5 @@
 import re
-from nonebot import on_command
+from nonebot import on_command,require
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
@@ -156,3 +156,12 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
         await ChatGptBotToken.finish('token错误: {}'.format(e))
         return
     await ChatGptBotToken.finish('token设置成功')
+
+require("nonebot_plugin_apscheduler")
+from nonebot_plugin_apscheduler import scheduler
+
+@scheduler.scheduled_job("interval", minutes=30)
+async def refresh_session() -> None:
+    if chatgpt.ChatGPT.session_token:
+        await chatgpt.ChatGPT.refresh_session()
+        logger.info("ChatGPT Session 已刷新")
