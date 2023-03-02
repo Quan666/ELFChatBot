@@ -74,8 +74,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
     if api_key is None:
         await ChatGptBot.finish('请先设置 api_key\n私聊发送：\nchatgpt_api_key xxxxxx')
 
-    if group_id is not None:
-        await ChatGptBot.send(f'ChatGPT聊天模式\n#预设\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
+    await ChatGptBot.send(f'ChatGPT聊天模式\n#预设\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
     args = str(event.get_plaintext()).strip()
     if args and args != "chatgpt":
         # 去掉开头的命令
@@ -90,7 +89,7 @@ def remove_cqcode(msg: str) -> str:
     return re.sub('\[.*?\]', '', msg)
 
 
-@ChatGptBot.got("ChatGptBot", prompt="输入你的问题\n#预设\n#重试(重新回答)\n#刷新(重置上下文)\n说 {} 结束聊天~".format(config.finish_keyword))
+@ChatGptBot.got("ChatGptBot")
 async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if event.__getattribute__('message_type') == 'private':
         group_id = None
