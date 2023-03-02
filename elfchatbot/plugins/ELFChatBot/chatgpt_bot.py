@@ -105,13 +105,13 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if len(msg) <= 0:
         await ChatGptBot.reject()
     if re.search(config.finish_keyword, msg):
-        await ChatGptBot.send('下次再聊哟！')
+        await ChatGptBot.send('下次再聊哟! \ntokens: {}'.format(state['Bot'].tokens))
         return
 
     bot = state['Bot']
 
     if msg == '#刷新':
-        bot.reset_chat()
+        bot.init_chat()
         await ChatGptBot.reject('已刷新上下文, 请重新输入问题')
 
     if msg.startswith('#预设'):
@@ -128,7 +128,7 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
         r_msg = f"{e}"
 
     if group_id is not None:
-        res_messages = MessageSegment.at(event.user_id)
+        res_messages = MessageSegment.at(event.user_id) + "\n"
     else:
         res_messages = MessageSegment.text('')
     await ChatGptBot.reject(res_messages + MessageSegment.text(r_msg))

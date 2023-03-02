@@ -17,6 +17,7 @@ class ChatGPT:
     def __init__(self, api_key, proxy={}):
         self.api_key = api_key
         self.systems = []
+        self.tokens = 0
         if proxy:
             self.proxy = httpx.Proxy(url="http://" + proxy)
         self.completion = openai.ChatCompletion()
@@ -44,6 +45,7 @@ class ChatGPT:
         response = self.completion.create(
             model="gpt-3.5-turbo", messages=self.message_history, api_key=self.api_key)
         self.message_history.append(response.choices[0].message)
+        self.tokens = response['usage']['total_tokens']
         return ChatGPTMessage(
             message=response.choices[0].message.content,
             tokens=response['usage']['total_tokens'],
