@@ -2,6 +2,7 @@ from typing import Optional
 import httpx
 from pydantic import BaseModel
 import httpx
+import traceback
 
 HOST = "api.openai.com"
 
@@ -43,22 +44,30 @@ class ChatGPT:
         else:
             self.message_history.append(
                 {"role": "user", "content": question})
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
-            response = await client.post(
-                f"https://{self.host}/v1/chat/completions",
-                json={
-                    "model": "gpt-3.5-turbo",
-                    "messages": self.message_history,
-                },
-                headers={
-                    "Authorization": f"Bearer {self.api_key}"
-                }
-            )
-            response = response.json()
-
-            self.message_history.append(response["choices"][0]["message"])
-            self.tokens = response['usage']['total_tokens']
+        try:
+            async with httpx.AsyncClient(proxies=self.proxy) as client:
+                response = await client.post(
+                    f"https://{self.host}/v1/chat/completions",
+                    json={
+                        "model": "gpt-3.5-turbo",
+                        "messages": self.message_history,
+                    },
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}"
+                    },
+                    timeout=120
+                )
+                response = response.json()
+                response["choices"][0]["message"]["content"] = response["choices"][0]["message"]["content"].strip()
+                self.message_history.append(response["choices"][0]["message"])
+                self.tokens = response['usage']['total_tokens']
+                return ChatGPTMessage(
+                    message=response["choices"][0]["message"]["content"].strip(),
+                    tokens=response['usage']['total_tokens'],
+                )
+        except Exception as e:
+            traceback.print_exc()
             return ChatGPTMessage(
-                message=response["choices"][0]["message"]["content"],
-                tokens=response['usage']['total_tokens'],
+                message=f"发生错误：{e}",
+                tokens=0,
             )
