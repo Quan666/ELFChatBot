@@ -1,4 +1,4 @@
-const HOST = "https://chat.openai.com";
+const HOST = "https://api.openai.com";
 
 addEventListener("fetch", (event) => {
     const request = event.request;

@@ -1,10 +1,9 @@
-import time
 from typing import Optional
 import httpx
-import json
-import uuid
 from pydantic import BaseModel
-import openai
+import httpx
+
+HOST = "api.openai.com"
 
 
 class ChatGPTMessage(BaseModel):
@@ -14,13 +13,15 @@ class ChatGPTMessage(BaseModel):
 
 class ChatGPT:
 
-    def __init__(self, api_key, proxy={}):
+    def __init__(self, api_key, proxy={}, host=HOST):
+        self.host = host
         self.api_key = api_key
         self.systems = []
         self.tokens = 0
         if proxy:
             self.proxy = httpx.Proxy(url="http://" + proxy)
-        self.completion = openai.ChatCompletion()
+        else:
+            self.proxy = {}
         self.init_chat()
 
     def init_chat(self):
@@ -42,11 +43,22 @@ class ChatGPT:
         else:
             self.message_history.append(
                 {"role": "user", "content": question})
-        response = self.completion.create(
-            model="gpt-3.5-turbo", messages=self.message_history, api_key=self.api_key)
-        self.message_history.append(response.choices[0].message)
-        self.tokens = response['usage']['total_tokens']
-        return ChatGPTMessage(
-            message=response.choices[0].message.content,
-            tokens=response['usage']['total_tokens'],
-        )
+        async with httpx.AsyncClient(proxies=self.proxy) as client:
+            response = await client.post(
+                f"https://{self.host}/v1/chat/completions",
+                json={
+                    "model": "gpt-3.5-turbo",
+                    "messages": self.message_history,
+                },
+                headers={
+                    "Authorization": f"Bearer {self.api_key}"
+                }
+            )
+            response = response.json()
+
+            self.message_history.append(response["choices"][0]["message"])
+            self.tokens = response['usage']['total_tokens']
+            return ChatGPTMessage(
+                message=response["choices"][0]["message"]["content"],
+                tokens=response['usage']['total_tokens'],
+            )

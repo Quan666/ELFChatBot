@@ -81,7 +81,7 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
         args = re.sub(r"^chatgpt\s*", "", args)
         state["ChatGptBot"] = args
     state['Bot'] = chatgpt.ChatGPT(
-        api_key=api_key, proxy=config.chat_proxy)
+        api_key=api_key, proxy=config.chat_proxy,host=config.chatgpt_host)
 
 
 def remove_cqcode(msg: str) -> str:
