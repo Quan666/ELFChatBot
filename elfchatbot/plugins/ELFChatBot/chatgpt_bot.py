@@ -1,5 +1,5 @@
 import re
-from nonebot import on_command,require
+from nonebot import on_command, require
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, unescape
 from nonebot.log import logger
 from nonebot.rule import Rule
@@ -49,6 +49,10 @@ def chat_me() -> Rule:
     return Rule(_chat_me)
 
 
+PRIVATE_API_KEY = {
+    # "user_id":"api_key"
+}
+
 ChatGptBot = on_command('chatgpt', rule=chat_me(), priority=5)
 
 
@@ -61,26 +65,24 @@ async def handle_first_receive(bot: Bot, event: Event, state: T_State):
 
     state['group_id'] = group_id
 
-    session_token = chatgpt.ChatGPT.session_token
-    if not session_token:
-        logger.error("没有配置 ChatGPT Session Token")
-        await ChatGptBot.finish("没有配置 ChatGPT Session Token, 请联系管理员配置")
-        return
+    # 获取用户的 api_key
+    if str(event.user_id) in PRIVATE_API_KEY:
+        api_key = PRIVATE_API_KEY[str(event.user_id)]
+    else:
+        api_key = PRIVATE_API_KEY.get('default', None)
+
+    if api_key is None:
+        await ChatGptBot.finish('请先设置 api_key\n私聊发送：\nchatgpt_api_key xxxxxx')
 
     if group_id is not None:
-        await ChatGptBot.send(f'ChatGPT聊天模式\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
-    chatgpt.ChatGPT.global_init(
-        session_token=session_token,
-        host=config.chatgpt_host if config.chatgpt_host else None,
-    )
-    await chatgpt.ChatGPT.refresh_session()
-    state['Bot'] = chatgpt.ChatGPT(proxy=config.chat_proxy)
-
+        await ChatGptBot.send(f'ChatGPT聊天模式\n#预设\n#重试(重新回答)\n#刷新(重置上下文)\n说 {config.finish_keyword} 结束聊天~')
     args = str(event.get_plaintext()).strip()
     if args and args != "chatgpt":
         # 去掉开头的命令
         args = re.sub(r"^chatgpt\s*", "", args)
         state["ChatGptBot"] = args
+    state['Bot'] = chatgpt.ChatGPT(
+        api_key=api_key, proxy=config.chat_proxy)
 
 
 def remove_cqcode(msg: str) -> str:
@@ -88,7 +90,7 @@ def remove_cqcode(msg: str) -> str:
     return re.sub('\[.*?\]', '', msg)
 
 
-@ChatGptBot.got("ChatGptBot", prompt="输入你的问题\n#重试(重新回答)\n#刷新(重置上下文)\n说 {} 结束聊天~".format(config.finish_keyword))
+@ChatGptBot.got("ChatGptBot", prompt="输入你的问题\n#预设\n#重试(重新回答)\n#刷新(重置上下文)\n说 {} 结束聊天~".format(config.finish_keyword))
 async def handle_Chat(bot: Bot, event: Event, state: T_State):
     if event.__getattribute__('message_type') == 'private':
         group_id = None
@@ -113,6 +115,10 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
         bot.reset_chat()
         await ChatGptBot.reject('已刷新上下文, 请重新输入问题')
 
+    if msg.startswith('#预设'):
+        bot.add_system(msg[3:].strip())
+        await ChatGptBot.reject('已添加预设指令, 请重新输入问题')
+
     try:
         if msg == '#重试':
             r_msg = (await bot.sendMsg(question=msg, action="variant")).message
@@ -130,38 +136,31 @@ async def handle_Chat(bot: Bot, event: Event, state: T_State):
 
 
 ChatGptBotToken = on_command(
-    'chatgpt_token', rule=chat_me(), priority=5, permission=SUPERUSER)
+    'chatgpt_api_key', rule=chat_me(), priority=5)
 
 
 @ChatGptBotToken.handle()
 async def handle_first_receive(bot: Bot, event: Event, state: T_State):
-    if event.__getattribute__('message_type') == 'private':
-        group_id = None
-    else:
-        group_id = event.group_id
-
-    state['group_id'] = group_id
-
     args = str(event.get_plaintext()).strip()
-    token = re.sub(r"^chatgpt_token\s*", "", args)
-    if not token:
-        await ChatGptBotToken.finish('没有输入token')
+    api_key = re.sub(r"^chatgpt_api_key\s*", "", args)
+    if not api_key:
+        await ChatGptBotToken.finish('没有输入 api_key')
+    PRIVATE_API_KEY[str(event.user_id)] = api_key
 
-    chatgpt.ChatGPT.session_token = token
-    try:
-        await chatgpt.ChatGPT.refresh_session()
+    await ChatGptBotToken.finish('api_key 设置成功')
 
-    except Exception as e:
-        logger.error(e)
-        await ChatGptBotToken.finish('token错误: {}'.format(e))
-        return
-    await ChatGptBotToken.finish('token设置成功')
 
-require("nonebot_plugin_apscheduler")
-from nonebot_plugin_apscheduler import scheduler
+ChatGptBotTokenAdmin = on_command(
+    'chatgpt_api_key_admin', rule=chat_me(), priority=5, permission=SUPERUSER)
 
-@scheduler.scheduled_job("interval", minutes=30)
-async def refresh_session() -> None:
-    if chatgpt.ChatGPT.session_token:
-        await chatgpt.ChatGPT.refresh_session()
-        logger.info("ChatGPT Session 已刷新")
+
+@ChatGptBotTokenAdmin.handle()
+async def handle_first_receive(bot: Bot, event: Event, state: T_State):
+    args = str(event.get_plaintext()).strip()
+    api_key = re.sub(r"^chatgpt_api_key_admin\s*", "", args)
+    if not api_key:
+        PRIVATE_API_KEY["default"] = None
+        await ChatGptBotToken.finish('全局 api_key 已清除')
+    PRIVATE_API_KEY["default"] = api_key
+
+    await ChatGptBotToken.finish('全局 api_key 设置成功')
