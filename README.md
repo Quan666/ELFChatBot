@@ -1,11 +1,10 @@
 # ELFChatBot
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1b642ec8ccd240bebc63cd37d7337e3d)](https://app.codacy.com/gh/Quan666/ELFChatBot?utm_source=github.com&utm_medium=referral&utm_content=Quan666/ELFChatBot&utm_campaign=Badge_Grade_Settings)
 
 > **这是一个闲聊机器人，基于 [Nonebot2](https://v2.nonebot.dev/guide/)**  
 > **接入了腾讯和百度的闲聊 api，百度的api支持连续对话**  
 > **可以实现群聊、私聊，同时随机回复群聊消息。**  
-> **支持 ChatGPT（感谢 https://github.com/acheong08/ChatGPT 项目）**  
+> **支持 ChatGPT **  
 
 效果图：
 
@@ -23,7 +22,7 @@ ChatGPT： 发送 `chatgpt` 命令触发
 
 ## 申请密钥
 
-1. 百度大脑平台（推荐使用！）
+1. 百度大脑平台
 
    https://ai.baidu.com/unit/home 注册并创建机器人，设置好机器人技能（至少包含闲聊），得到机器人id（S开头）、`api_key`、`secret_key`
 
@@ -35,11 +34,11 @@ ChatGPT： 发送 `chatgpt` 命令触发
    ~~前往 [https://ai.qq.com/console/capability/detail/8](https://ai.qq.com/console/capability/detail/8) 注册并创建应用，并在能力库接入 智能闲聊，得到 `app_id` 以及 `app_key`~~
 
 
-3. 注册 openai 
+3. 注册 openai （推荐使用！）
    
    OpenAI: [https://chat.openai.com/chat](https://chat.openai.com/chat)
 
-   在cookie中找到 __Secure-next-auth.session-token 通过 `chatgpt_token` 命令设置
+   创建 api key
    
    国内服务器需要以下步骤二选一：
 
@@ -48,8 +47,17 @@ ChatGPT： 发送 `chatgpt` 命令触发
     2. 配置代理(e: chat_proxy="127.0.0.1:7890")
 
    使用： 
+    
+    私聊发送 chatgpt_api_key 设置 api key(仅仅自己使用)
+    
+    私聊发送 chatgpt_api_key_admin 设置全局 api key (所有人都可使用)
+    
     发送 `chatgpt 问题` 即可，在群组需要在前面 @机器人
-
+    
+    支持以下指令: 
+    #预设 (预设指令，例如扮演猫娘) 、
+    #重试 (重新回答) 、
+    #刷新 (重置上下文) 、
 
 ## 部署
 
